@@ -4,7 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "npm run build:lib && npm run build:demo",
+    "build:lib": "ng build popup-ngx-query-builder",
+    "build:demo": "ng build popup-demo",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
