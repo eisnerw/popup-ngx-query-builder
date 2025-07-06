@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - 'projects/popup-demo/**'
+      - 'projects/popup-ngx-query-builder/**'
+  pull_request:
+    paths:
+      - 'projects/popup-demo/**'
+      - 'projects/popup-ngx-query-builder/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
