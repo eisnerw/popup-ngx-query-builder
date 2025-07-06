@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "paths": {
-        "ngx-query-builder": ["projects/ngx-query-builder/src/public-api.ts"]
+        "ngx-query-builder": ["projects/ngx-query-builder/src/public-api.ts"],
+        "popup-ngx-query-builder": ["projects/popup-ngx-query-builder/src/public-api.ts"]
         }
     }
 }

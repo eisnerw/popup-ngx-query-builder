@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { QueryInputComponent } from 'popup-ngx-query-builder';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [QueryInputComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

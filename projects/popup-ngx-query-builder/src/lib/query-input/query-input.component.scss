@@ -1,0 +1,20 @@
+.query-input {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.text {
+  flex: 1;
+  padding: 0.25rem;
+  cursor: text;
+}
+
+.placeholder {
+  font-style: italic;
+  color: gray;
+}
+
+.btn-group button {
+  margin-left: 0.25rem;
+}
