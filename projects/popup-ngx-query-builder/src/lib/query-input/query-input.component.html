@@ -1,0 +1,17 @@
+<div class="query-input">
+  <button pButton icon="pi pi-search" class="search-btn" (click)="clickSearch()"></button>
+
+  <div class="text" *ngIf="!editing" (click)="editing = true">
+    <span [ngClass]="{'placeholder': !query}">{{ query || placeholder }}</span>
+  </div>
+  <input pInputText *ngIf="editing" [(ngModel)]="query" (keyup.enter)="acceptEdit()" />
+
+  <div class="btn-group" *ngIf="editing">
+    <button pButton icon="pi pi-times" (click)="cancelEdit()"></button>
+    <button pButton icon="pi pi-check" (click)="acceptEdit()"></button>
+  </div>
+</div>
+
+<p-dialog [(visible)]="showBuilder" [modal]="true" header="Query Builder">
+  <ngx-query-builder [query]="builderQuery" (queryChange)="builderApplied($event)"></ngx-query-builder>
+</p-dialog>
