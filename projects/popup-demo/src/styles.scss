@@ -15,3 +15,163 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Basic PrimeNG Dialog Styles */
+.p-dialog {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14), 0 9px 46px 8px rgba(0,0,0,.12);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  
+  .p-dialog-header {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 6px 6px 0 0;
+    
+    .p-dialog-title {
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+    
+    .p-dialog-header-icon {
+      width: 2rem;
+      height: 2rem;
+      color: #6c757d;
+      border: 0 none;
+      background: transparent;
+      border-radius: 50%;
+      transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      
+      &:hover {
+        color: #495057;
+        background: #e9ecef;
+      }
+    }
+  }
+  
+  .p-dialog-content {
+    padding: 1rem;
+    background: white;
+  }
+  
+  .p-dialog-footer {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 6px 6px;
+    text-align: right;
+    
+    .p-button {
+      margin-left: 0.5rem;
+    }
+  }
+}
+
+.p-dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+/* Basic PrimeNG Dropdown Styles */
+.p-dropdown {
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  border-radius: 4px;
+  
+  &:not(.p-disabled):hover {
+    border-color: #007bff;
+  }
+  
+  &:not(.p-disabled).p-focus {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    border-color: #007bff;
+  }
+  
+  .p-dropdown-label {
+    background: transparent;
+    border: 0 none;
+    padding: 0.5rem 0.75rem;
+    
+    &.p-placeholder {
+      color: #6c757d;
+    }
+  }
+  
+  .p-dropdown-trigger {
+    background: transparent;
+    color: #6c757d;
+    width: 2.5rem;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+}
+
+.p-dropdown-panel {
+  background: #ffffff;
+  color: #495057;
+  border: 0 none;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px -1px rgba(0,0,0,.2), 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12);
+  
+  .p-dropdown-items-wrapper {
+    overflow: auto;
+  }
+  
+  .p-dropdown-item {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border: 0 none;
+    color: #495057;
+    background: transparent;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, background-size 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
+    border-radius: 0;
+    
+    &:not(.p-highlight):not(.p-disabled):hover {
+      color: #495057;
+      background: #e9ecef;
+    }
+    
+    &.p-highlight {
+      color: #ffffff;
+      background: #007bff;
+    }
+  }
+}
+
+/* Basic PrimeNG Input Text Styles */
+.p-inputtext {
+  font-family: inherit;
+  font-size: 1rem;
+  color: #495057;
+  background: #ffffff;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ced4da;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  border-radius: 4px;
+  
+  &:enabled:hover {
+    border-color: #007bff;
+  }
+  
+  &:enabled:focus {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    border-color: #007bff;
+  }
+}
