@@ -1,1 +1,18 @@
-<lib-query-input></lib-query-input>
+<div class="demo-container">
+  <h1>Popup NGX Query Builder Demo</h1>
+  <p>This is a demo of the popup query builder component. Click the search button to open the query builder.</p>
+  
+  <div class="query-section">
+    <h3>Query Input Component</h3>
+    <lib-query-input 
+      [(query)]="currentQuery"
+      (queryChange)="onQueryChange($event)"
+      placeholder="Click search to build a query...">
+    </lib-query-input>
+  </div>
+  
+  <div class="result-section" *ngIf="currentQuery">
+    <h3>Current Query</h3>
+    <pre>{{ currentQuery | json }}</pre>
+  </div>
+</div>

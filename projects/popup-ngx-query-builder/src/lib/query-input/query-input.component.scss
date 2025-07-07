@@ -1,20 +1,77 @@
 .query-input {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  background: white;
+  
+  .search-btn {
+    margin-right: 8px;
+  }
+  
+  .text {
+    flex: 1;
+    padding: 4px 8px;
+    cursor: text;
+    min-height: 20px;
+    
+    .placeholder {
+      color: #999;
+      font-style: italic;
+    }
+  }
+  
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 4px;
+  }
+  
+  .btn-group {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+  }
 }
 
-.text {
-  flex: 1;
-  padding: 0.25rem;
-  cursor: text;
-}
-
-.placeholder {
-  font-style: italic;
-  color: gray;
-}
-
-.btn-group button {
-  margin-left: 0.25rem;
+.query-builder {
+  padding: 1rem;
+  
+  .condition-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    
+    label {
+      font-weight: 500;
+    }
+  }
+  
+  .rules-section {
+    h4 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    
+    .rule-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      background: #f8f9fa;
+      border-radius: 4px;
+      
+      p-dropdown {
+        min-width: 120px;
+      }
+      
+      input {
+        min-width: 150px;
+      }
+    }
+  }
 }
