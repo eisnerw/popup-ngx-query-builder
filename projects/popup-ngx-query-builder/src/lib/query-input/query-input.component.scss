@@ -91,17 +91,27 @@
   
   /* Resizable handles styling */
   .p-resizable-handle {
-    background: transparent;
-    opacity: 1;
+    background: #667eea;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  .p-dialog-resizable {
+    &:hover .p-resizable-handle {
+      opacity: 0.5;
+    }
   }
 
   /* Resize handle corners */
   .p-resizable-handle.p-resizable-handle-se {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 12px 12px 0;
-    border-color: transparent transparent #667eea transparent;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(-45deg, transparent 40%, #667eea 40%, #667eea 60%, transparent 60%);
+    border-radius: 0 0 6px 0;
   }
 }
 
