@@ -28,6 +28,9 @@ export class QueryInputComponent {
   @Input() placeholder = 'Enter query';
   @Input() query = '';
   @Input() config?: QueryBuilderConfig;
+  @Input() allowNot = true;
+  @Input() allowConvertToRuleset = true;
+  @Input() allowRuleUpDown = true;
   @Output() queryChange = new EventEmitter<string>();
 
   editing = false;
