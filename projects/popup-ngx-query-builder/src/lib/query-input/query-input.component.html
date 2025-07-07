@@ -12,8 +12,20 @@
   </div>
 </div>
 
-<p-dialog [(visible)]="showBuilder" [modal]="true" header="Query Builder" [style]="{width: '50vw'}">
-  <div class="query-builder">
+<p-dialog 
+  [(visible)]="showBuilder" 
+  [modal]="true" 
+  [closable]="true"
+  [draggable]="true"
+  [resizable]="true"
+  [maximizable]="true"
+  header="Query Builder" 
+  [style]="{width: '800px', height: '600px', minWidth: '600px', minHeight: '400px'}"
+  [contentStyle]="{height: 'calc(100% - 120px)', overflow: 'auto', padding: '0'}"
+  styleClass="query-builder-dialog"
+  [baseZIndex]="10000">
+  
+  <div class="query-builder-content">
     <div class="condition-row">
       <label>Condition: </label>
       <p-dropdown 
@@ -27,34 +39,38 @@
 
     <div class="rules-section">
       <h4>Rules:</h4>
-      <div *ngFor="let rule of builderQuery.rules; let i = index" class="rule-row">
-        <p-dropdown 
-          [(ngModel)]="rule.field" 
-          [options]="queryBuilderConfig.fields"
-          optionValue="value"
-          optionLabel="name"
-          placeholder="Select field">
-        </p-dropdown>
+      <div class="rules-scrollable">
+        <div *ngFor="let rule of builderQuery.rules; let i = index" class="rule-row">
+          <p-dropdown 
+            [(ngModel)]="rule.field" 
+            [options]="queryBuilderConfig.fields"
+            optionValue="value"
+            optionLabel="name"
+            placeholder="Select field">
+          </p-dropdown>
+          
+          <p-dropdown 
+            [(ngModel)]="rule.operator" 
+            [options]="operators"
+            optionValue="value"
+            optionLabel="name"
+            placeholder="Select operator">
+          </p-dropdown>
+          
+          <input pInputText [(ngModel)]="rule.value" placeholder="Enter value" />
+          
+          <button pButton icon="pi pi-trash" (click)="removeRule(i)" class="p-button-danger p-button-sm"></button>
+        </div>
         
-        <p-dropdown 
-          [(ngModel)]="rule.operator" 
-          [options]="operators"
-          optionValue="value"
-          optionLabel="name"
-          placeholder="Select operator">
-        </p-dropdown>
-        
-        <input pInputText [(ngModel)]="rule.value" placeholder="Enter value" />
-        
-        <button pButton icon="pi pi-trash" (click)="removeRule(i)" class="p-button-danger"></button>
+        <button pButton icon="pi pi-plus" label="Add Rule" (click)="addRule()" class="p-button-outlined add-rule-btn"></button>
       </div>
-      
-      <button pButton icon="pi pi-plus" label="Add Rule" (click)="addRule()" class="p-button-outlined"></button>
     </div>
   </div>
   
   <ng-template pTemplate="footer">
-    <button pButton label="Cancel" (click)="cancelQuery()" class="p-button-secondary"></button>
-    <button pButton label="Apply" (click)="applyQuery()" class="p-button-primary"></button>
+    <div class="dialog-footer">
+      <button pButton label="Cancel" (click)="cancelQuery()" class="p-button-secondary"></button>
+      <button pButton label="Apply" (click)="applyQuery()" class="p-button-primary"></button>
+    </div>
   </ng-template>
 </p-dialog>

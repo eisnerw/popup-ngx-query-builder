@@ -16,7 +16,8 @@
     "moduleResolution": "bundler",
     "paths": {
       "popup-ngx-query-builder": [
-        "./dist/popup-ngx-query-builder"
+        "./dist/popup-ngx-query-builder",
+        "./projects/popup-ngx-query-builder/src/public-api"
       ]
     },
     "importHelpers": true,

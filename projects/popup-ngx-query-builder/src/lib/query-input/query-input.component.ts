@@ -50,6 +50,16 @@ export class QueryInputComponent {
 
   clickSearch() {
     this.builderQuery = this.parseQuery(this.query);
+    
+    // Ensure the query has the required structure
+    if (!this.builderQuery.condition) {
+      this.builderQuery.condition = 'and';
+    }
+    
+    if (!this.builderQuery.rules || this.builderQuery.rules.length === 0) {
+      this.builderQuery.rules = [this.createEmptyRule()];
+    }
+    
     this.showBuilder = true;
   }
 
@@ -70,7 +80,8 @@ export class QueryInputComponent {
 
   parseQuery(text: string): any {
     try {
-      return JSON.parse(text);
+      const parsed = JSON.parse(text);
+      return parsed && typeof parsed === 'object' ? parsed : { condition: 'and', rules: [] };
     } catch {
       return { condition: 'and', rules: [] };
     }
@@ -78,30 +89,67 @@ export class QueryInputComponent {
 
   stringifyQuery(obj: any): string {
     try {
-      return JSON.stringify(obj);
+      // Clean up the query object before stringifying
+      const cleanQuery = this.cleanQuery(obj);
+      return JSON.stringify(cleanQuery, null, 2);
     } catch {
       return '';
     }
+  }
+
+  private cleanQuery(query: any): any {
+    if (!query || typeof query !== 'object') {
+      return { condition: 'and', rules: [] };
+    }
+    
+    const cleaned = {
+      condition: query.condition || 'and',
+      rules: (query.rules || []).filter((rule: any) => 
+        rule.field && rule.operator && (rule.value !== undefined && rule.value !== '')
+      )
+    };
+    
+    return cleaned;
+  }
+
+  private createEmptyRule() {
+    return {
+      field: '',
+      operator: '=',
+      value: ''
+    };
   }
 
   addRule() {
     if (!this.builderQuery.rules) {
       this.builderQuery.rules = [];
     }
-    this.builderQuery.rules.push({
-      field: '',
-      operator: '=',
-      value: ''
-    });
+    this.builderQuery.rules.push(this.createEmptyRule());
   }
 
   removeRule(index: number) {
-    if (this.builderQuery.rules) {
+    if (this.builderQuery.rules && this.builderQuery.rules.length > index) {
       this.builderQuery.rules.splice(index, 1);
+    }
+    
+    // Ensure at least one rule exists
+    if (!this.builderQuery.rules || this.builderQuery.rules.length === 0) {
+      this.builderQuery.rules = [this.createEmptyRule()];
     }
   }
 
   applyQuery() {
+    // Validate that at least one rule is properly filled
+    const validRules = this.builderQuery.rules?.filter((rule: any) => 
+      rule.field && rule.operator && (rule.value !== undefined && rule.value !== '')
+    ) || [];
+    
+    if (validRules.length === 0) {
+      // If no valid rules, show an alert or handle gracefully
+      alert('Please add at least one complete rule before applying.');
+      return;
+    }
+    
     this.builderApplied(this.builderQuery);
   }
 

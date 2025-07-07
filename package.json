@@ -7,7 +7,9 @@
     "build": "npm run build:lib && npm run build:demo",
     "build:lib": "ng build popup-ngx-query-builder",
     "build:demo": "ng build popup-demo",
-    "watch": "ng build --watch --configuration development",
+    "watch": "npm run build:lib && concurrently \"npm run watch:lib\" \"npm run watch:demo\"",
+    "watch:lib": "ng build popup-ngx-query-builder --watch --configuration development",
+    "watch:demo": "ng build popup-demo --watch --configuration development",
     "test": "ng test"
   },
   "private": true,
@@ -31,6 +33,7 @@
     "@angular/cli": "^19.2.15",
     "@angular/compiler-cli": "^19.2.0",
     "@types/jasmine": "~5.1.0",
+    "concurrently": "^8.2.0",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
