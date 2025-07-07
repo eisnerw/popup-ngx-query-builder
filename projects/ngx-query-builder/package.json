@@ -1,0 +1,21 @@
+{
+  "name": "@kerwin612/ngx-query-builder",
+  "version": "0.6.5",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kerwin612/ngx-query-builder"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kerwin612/ngx-query-builder/issues"
+  },
+  "homepage": "https://github.com/kerwin612/ngx-query-builder",
+  "peerDependencies": {
+    "@angular/common": "^19.0.0",
+    "@angular/core": "^19.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
