@@ -37,17 +37,15 @@
 }
 
 /* Query Builder Dialog Styles */
-::ng-deep .query-builder-dialog {
-  .p-dialog {
-    border-radius: 8px;
-    border: 2px solid #667eea;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 10000 !important;
-  }
+::ng-deep .p-dialog.query-builder-dialog {
+  border-radius: 8px;
+  border: 2px solid #667eea;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 10000 !important;
   
   .p-dialog-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -93,27 +91,17 @@
   
   /* Resizable handles styling */
   .p-resizable-handle {
-    background: #667eea;
-    opacity: 0.3;
-    transition: opacity 0.2s;
-    
-    &:hover {
-      opacity: 0.7;
-    }
+    background: transparent;
+    opacity: 1;
   }
-  
-  .p-dialog-resizable {
-    &:hover .p-resizable-handle {
-      opacity: 0.5;
-    }
-  }
-  
+
   /* Resize handle corners */
   .p-resizable-handle.p-resizable-handle-se {
-    width: 12px;
-    height: 12px;
-    background: linear-gradient(-45deg, transparent 40%, #667eea 40%, #667eea 60%, transparent 60%);
-    border-radius: 0 0 6px 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 12px 12px 0;
+    border-color: transparent transparent #667eea transparent;
   }
 }
 
@@ -292,7 +280,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  ::ng-deep .query-builder-dialog .p-dialog {
+  ::ng-deep .p-dialog.query-builder-dialog {
     width: 95vw !important;
     height: 90vh !important;
     margin: 0 !important;
