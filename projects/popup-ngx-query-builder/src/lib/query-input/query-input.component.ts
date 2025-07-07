@@ -6,45 +6,46 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TreeModule } from 'primeng/tree';
+import { QueryBuilderModule, QueryBuilderConfig, RuleSet } from 'ngx-query-builder';
 
 @Component({
   selector: 'lib-query-input',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule, DropdownModule, TreeModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DialogModule,
+    ButtonModule,
+    InputTextModule,
+    DropdownModule,
+    TreeModule,
+    QueryBuilderModule
+  ],
   styleUrls: ['./query-input.component.scss'],
   templateUrl: './query-input.component.html'
 })
 export class QueryInputComponent {
   @Input() placeholder = 'Enter query';
   @Input() query = '';
-  @Input() config: any;
+  @Input() config?: QueryBuilderConfig;
   @Output() queryChange = new EventEmitter<string>();
 
   editing = false;
   showBuilder = false;
-  builderQuery: any = {};
+  builderQuery: RuleSet = { condition: 'and', rules: [] };
 
   // Default configuration for the query builder
-  defaultConfig = {
-    fields: [
-      { value: 'name', name: 'Name', type: 'string' },
-      { value: 'age', name: 'Age', type: 'number' },
-      { value: 'email', name: 'Email', type: 'string' },
-      { value: 'active', name: 'Active', type: 'boolean' },
-      { value: 'date', name: 'Date', type: 'date' }
-    ]
+  defaultConfig: QueryBuilderConfig = {
+    fields: {
+      name: { name: 'Name', type: 'string' },
+      age: { name: 'Age', type: 'number' },
+      email: { name: 'Email', type: 'string' },
+      active: { name: 'Active', type: 'boolean' },
+      date: { name: 'Date', type: 'date' }
+    }
   };
 
-  operators = [
-    { value: '=', name: 'equals' },
-    { value: '!=', name: 'not equals' },
-    { value: '>', name: 'greater than' },
-    { value: '<', name: 'less than' },
-    { value: 'contains', name: 'contains' },
-    { value: 'like', name: 'like' }
-  ];
-
-  get queryBuilderConfig() {
+  get queryBuilderConfig(): QueryBuilderConfig {
     return this.config || this.defaultConfig;
   }
 
@@ -56,14 +57,10 @@ export class QueryInputComponent {
       this.builderQuery.condition = 'and';
     }
     
-    if (!this.builderQuery.rules || this.builderQuery.rules.length === 0) {
-      this.builderQuery.rules = [this.createEmptyRule()];
-    }
-    
     this.showBuilder = true;
   }
 
-  builderApplied(q: any) {
+  builderApplied(q: RuleSet) {
     this.query = this.stringifyQuery(q);
     this.queryChange.emit(this.query);
     this.showBuilder = false;
@@ -78,7 +75,7 @@ export class QueryInputComponent {
     this.queryChange.emit(this.query);
   }
 
-  parseQuery(text: string): any {
+  parseQuery(text: string): RuleSet {
     try {
       const parsed = JSON.parse(text);
       return parsed && typeof parsed === 'object' ? parsed : { condition: 'and', rules: [] };
@@ -87,7 +84,7 @@ export class QueryInputComponent {
     }
   }
 
-  stringifyQuery(obj: any): string {
+  stringifyQuery(obj: RuleSet): string {
     try {
       // Clean up the query object before stringifying
       const cleanQuery = this.cleanQuery(obj);
@@ -97,12 +94,12 @@ export class QueryInputComponent {
     }
   }
 
-  private cleanQuery(query: any): any {
+  private cleanQuery(query: RuleSet): RuleSet {
     if (!query || typeof query !== 'object') {
       return { condition: 'and', rules: [] };
     }
     
-    const cleaned = {
+    const cleaned: RuleSet = {
       condition: query.condition || 'and',
       rules: (query.rules || []).filter((rule: any) => 
         rule.field && rule.operator && (rule.value !== undefined && rule.value !== '')
@@ -112,44 +109,7 @@ export class QueryInputComponent {
     return cleaned;
   }
 
-  private createEmptyRule() {
-    return {
-      field: '',
-      operator: '=',
-      value: ''
-    };
-  }
-
-  addRule() {
-    if (!this.builderQuery.rules) {
-      this.builderQuery.rules = [];
-    }
-    this.builderQuery.rules.push(this.createEmptyRule());
-  }
-
-  removeRule(index: number) {
-    if (this.builderQuery.rules && this.builderQuery.rules.length > index) {
-      this.builderQuery.rules.splice(index, 1);
-    }
-    
-    // Ensure at least one rule exists
-    if (!this.builderQuery.rules || this.builderQuery.rules.length === 0) {
-      this.builderQuery.rules = [this.createEmptyRule()];
-    }
-  }
-
   applyQuery() {
-    // Validate that at least one rule is properly filled
-    const validRules = this.builderQuery.rules?.filter((rule: any) => 
-      rule.field && rule.operator && (rule.value !== undefined && rule.value !== '')
-    ) || [];
-    
-    if (validRules.length === 0) {
-      // If no valid rules, show an alert or handle gracefully
-      alert('Please add at least one complete rule before applying.');
-      return;
-    }
-    
     this.builderApplied(this.builderQuery);
   }
 

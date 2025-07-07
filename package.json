@@ -5,10 +5,10 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "npm run build:lib && npm run build:demo",
-    "build:lib": "ng build popup-ngx-query-builder",
+    "build:lib": "ng build ngx-query-builder && ng build popup-ngx-query-builder",
     "build:demo": "ng build popup-demo",
     "watch": "npm run build:lib && concurrently \"npm run watch:lib\" \"npm run watch:demo\"",
-    "watch:lib": "ng build popup-ngx-query-builder --watch --configuration development",
+    "watch:lib": "concurrently \"ng build ngx-query-builder --watch --configuration development\" \"ng build popup-ngx-query-builder --watch --configuration development\"",
     "watch:demo": "ng build popup-demo --watch --configuration development",
     "test": "ng test"
   },
