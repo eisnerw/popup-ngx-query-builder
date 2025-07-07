@@ -15,6 +15,10 @@
     "experimentalDecorators": true,
     "moduleResolution": "bundler",
     "paths": {
+      "ngx-query-builder": [
+        "./dist/ngx-query-builder",
+        "./projects/ngx-query-builder/src/public-api"
+      ],
       "popup-ngx-query-builder": [
         "./dist/popup-ngx-query-builder",
         "./projects/popup-ngx-query-builder/src/public-api"
