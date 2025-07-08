@@ -13,6 +13,10 @@
   
   <div class="result-section" *ngIf="currentQuery">
     <h3>Current Query</h3>
-    <pre>{{ currentQuery | json }}</pre>
+    <textarea 
+      class="query-output"
+      [value]="getFormattedQuery()"
+      readonly>
+    </textarea>
   </div>
 </div>
