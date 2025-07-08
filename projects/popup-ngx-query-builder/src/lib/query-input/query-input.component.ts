@@ -104,10 +104,31 @@ export class QueryInputComponent {
     
     const cleaned: RuleSet = {
       condition: query.condition || 'and',
-      rules: (query.rules || []).filter((rule: any) => 
-        rule.field && rule.operator && (rule.value !== undefined && rule.value !== '')
-      )
+      rules: (query.rules || []).map((item: any) => {
+        // Check if this is a nested ruleset
+        if (item.condition && item.rules) {
+          // Recursively clean nested rulesets
+          return this.cleanQuery(item);
+        }
+        // This is a regular rule - validate it has required fields
+        else if (item.field && item.operator && (item.value !== undefined && item.value !== '')) {
+          return item;
+        }
+        // Invalid rule, exclude it
+        return null;
+      }).filter(item => item !== null)
     };
+    
+    // Include additional properties if they exist
+    if (query.not !== undefined) {
+      cleaned.not = query.not;
+    }
+    if (query.collapsed !== undefined) {
+      cleaned.collapsed = query.collapsed;
+    }
+    if (query.isChild !== undefined) {
+      cleaned.isChild = query.isChild;
+    }
     
     return cleaned;
   }
