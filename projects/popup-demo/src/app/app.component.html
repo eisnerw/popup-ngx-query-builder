@@ -4,9 +4,10 @@
   
   <div class="query-section">
     <h3>Query Input Component</h3>
-    <lib-query-input 
+    <lib-query-input
       [(query)]="currentQuery"
       (queryChange)="onQueryChange($event)"
+      [config]="config"
       placeholder="Click search to build a query...">
     </lib-query-input>
   </div>
