@@ -175,3 +175,7 @@ body {
     border-color: #007bff;
   }
 }
+
+.cdk-overlay-container {
+  z-index: 11000;
+}

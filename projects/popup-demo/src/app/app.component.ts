@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { QueryBuilderConfig, RuleSet, Rule } from 'ngx-query-builder';
 import { firstValueFrom } from 'rxjs';
-import { EditRulesetDialogComponent } from './edit-ruleset-dialog.component';
+import { EditRulesetDialogComponent } from 'popup-ngx-query-builder';
 
 @Component({
   selector: 'app-root',
