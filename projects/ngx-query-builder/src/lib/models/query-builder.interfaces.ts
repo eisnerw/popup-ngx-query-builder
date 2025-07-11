@@ -1,6 +1,7 @@
 export interface RuleSet {
   condition: string;
   rules: (RuleSet | Rule)[];
+  name?: string;
   not?: boolean;
   collapsed?: boolean;
   isChild?: boolean;
@@ -31,6 +32,7 @@ export interface Field {
   defaultOperator?: any;
   entity?: string;
   validator?: (rule: Rule, parent: RuleSet) => any | null;
+  categorySource?: (rule: Rule, parent: RuleSet) => string[] | null;
 }
 
 export interface LocalRuleMeta {
@@ -83,6 +85,9 @@ export interface QueryBuilderClassNames {
   inputControlSize?: string;
   upIcon?: string;
   downIcon?: string;
+  equalIcon?: string;
+  searchIcon?: string;
+  saveIcon?: string;
   collapsedSummary?: string;
 }
 
@@ -104,6 +109,12 @@ export interface QueryBuilderConfig {
                                nextField: Field | undefined,
                                currentValue: any) => any;
   customCollapsedSummary?: (ruleset: RuleSet) => string;
+  listNamedRulesets?: () => string[];
+  getNamedRuleset?: (name: string) => RuleSet;
+  saveNamedRuleset?: (ruleset: RuleSet) => void;
+  deleteNamedRuleset?: (name: string) => void;
+  editNamedRuleset?: (ruleset: RuleSet) => Promise<RuleSet | null> | RuleSet | null;
+  rulesetNameSanitizer?: (value: string) => string;
 }
 
 export interface SwitchGroupContext {

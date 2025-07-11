@@ -25,6 +25,20 @@
     }
   }
 
+  .q-equal-icon {
+    fill: currentColor;
+    vertical-align: -1px;
+    color: rgb(52 47 167)
+  }
+
+  .q-search-icon::before {
+    content: '🔍'
+  }
+
+  .q-save-icon::before {
+    content: '💾'
+  }
+
   .q-up-icon {
     &::before {
       content: '▲';
@@ -131,6 +145,12 @@
     padding: 0 8px;
   }
 
+  .q-switch-label-empty {
+    visibility: hidden;
+    display: inline-block;
+    width: 12px;
+  }
+
   .q-switch-radio {
     position: absolute;
     clip: rect(0, 0, 0, 0);
@@ -179,6 +199,29 @@
       gap: 10px;
       align-items: center;
     }
+  }
+
+  .q-button-wrapper.q-hide-buttons .q-buttons {
+    display: none;
+  }
+
+  .q-button-wrapper .q-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .q-button-wrapper.q-hide-buttons:hover .q-buttons {
+    display: flex;
+  }
+
+  .q-button-wrapper.q-hide-buttons .q-ellipsis {
+    cursor: pointer;
+    padding: 0 4px;
+  }
+
+  .q-button-wrapper.q-hide-buttons:hover .q-ellipsis {
+    display: none;
   }
 
   .q-invalid-ruleset {
@@ -260,5 +303,64 @@
     font-style: italic;
     font-size: 0.85em;
     align-self: center;
+  }
+
+  .q-invalid-message {
+    font-size: 0.75em;
+    font-style: italic;
+    font-weight: 300;
+    color: #666;
+    align-self: center;
+    margin-right: 8px;
+  }
+
+  .q-name-text {
+    font-size: 0.75em;
+    font-style: italic;
+    font-weight: 300;
+    color: #666;
+    cursor: pointer;
+    align-self: center;
+    margin-right: 8px;
+  }
+
+  .q-name-edit {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: 8px;
+  }
+
+  .q-name-input {
+    font-size: 0.75em;
+    padding: 2px 4px;
+    border: 1px solid #bbb;
+  }
+
+  .q-name-edit .q-button {
+    border: none;
+    padding: 0 4px;
+    font-size: 0.75em;
+  }
+
+  .q-name-action {
+    margin-left: 8px;
+  }
+
+  .q-name-action-modified {
+    border: 2px solid #B3415D;
+    background: rgba(179, 65, 93, 0.1);
+  }
+
+  .q-name-label {
+    font-size: 0.75em;
+    font-style: italic;
+    font-weight: 300;
+    color: #666;
+    margin-left: 4px;
+  }
+
+  .q-name-modified {
+    font-weight: bold;
   }
 }

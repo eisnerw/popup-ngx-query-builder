@@ -1,6 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { QueryBuilderComponent } from './components/query-builder.component';
 
@@ -16,11 +21,19 @@ import { QueryRulesetAddRulesetButtonDirective } from './directives/query-rulese
 import { QueryRulesetRemoveButtonDirective } from './directives/query-ruleset-remove-button.directive';
 import { QueryRuleRemoveButtonDirective } from './directives/query-rule-remove-button.directive';
 import { QueryEmptyWarningDirective } from './directives/query-empty-warning.directive';
+import { AddNamedRulesetDialogComponent } from './components/add-named-ruleset-dialog.component';
+import { NamedRulesetDialogComponent } from './components/named-ruleset-dialog.component';
+import { MessageDialogComponent } from './components/message-dialog.component';
 
 @NgModule({
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatInputModule,
+    MatFormFieldModule
   ],
   declarations: [
     QueryBuilderComponent,
@@ -35,7 +48,10 @@ import { QueryEmptyWarningDirective } from './directives/query-empty-warning.dir
     QueryRulesetRemoveButtonDirective,
     QueryRuleRemoveButtonDirective,
     QueryEmptyWarningDirective,
-    QueryArrowIconDirective
+    QueryArrowIconDirective,
+    AddNamedRulesetDialogComponent,
+    NamedRulesetDialogComponent,
+    MessageDialogComponent
   ],
   exports: [
     QueryBuilderComponent,

@@ -1,4 +1,4 @@
-<ng-container *ngIf="{ruleset: isRuleset(data), invalid: !config.allowEmptyRulesets && isEmptyRuleset(data)} as local">
+<ng-container *ngIf="{ruleset: isRuleset(data), invalidEmpty: !config.allowEmptyRulesets && isEmptyRuleset(data), invalid: isRulesetInvalid(data)} as local">
   <div [ngClass]="getQueryRulesetClassName(local)">
     <div [ngClass]="getClassNames('switchRow')">
       <a *ngIf="allowCollapse" (click)="toggleCollapse()" [ngClass]="getClassNames('arrowIconButton', collapsed ? 'collapsed' : null)">
@@ -7,6 +7,21 @@
 
       <ng-template [ngTemplateOutlet]="_switchGroupTpl"/>
 
+      <span *ngIf="namingRuleset === data" class="q-name-edit">
+        <input [(ngModel)]="namingRulesetName" class="q-name-input" (input)="onNamingInput($event)" />
+        <button type="button" (click)="confirmNamingRuleset()" [ngClass]="getClassNames('button')">✓</button>
+        <button type="button" (click)="cancelNamingRuleset()" [ngClass]="getClassNames('button')">✕</button>
+      </span>
+      <span *ngIf="!data.name && config.saveNamedRuleset && !isRulesetInvalid(data) && namingRuleset !== data" class="q-name-text" (click)="startNamingRuleset(data)">Click to name {{rulesetName}}</span>
+
+      <button *ngIf="data.name && config.getNamedRuleset && config.saveNamedRuleset && config.deleteNamedRuleset" type="button" class="q-name-action" (click)="namedRulesetAction(data)" [ngClass]="getClassNames('button')" [class.q-name-action-modified]="namedRulesetModified(data)" [disabled]="disabled" [title]="namedRulesetModified(data) ? rulesetName + ' has been modified needs to be saved, renamed or unnamed' : null">
+        <i [ngClass]="getClassNames(namedRulesetModified(data) ? 'saveIcon' : 'searchIcon')"></i>
+        <span class="q-name-label" [ngClass]="{'q-name-modified': namedRulesetModified(data)}">{{data.name}}</span>
+      </button>
+
+      <span *ngIf="collapsed && config.customCollapsedSummary" [ngClass]="getClassNames('collapsedSummary')">
+        {{ config.customCollapsedSummary(data) }}
+      </span>
       <ng-template [ngTemplateOutlet]="_buttonGroupTpl"/>
     </div>
 
@@ -29,7 +44,10 @@
                     <ng-template [ngTemplateOutlet]="_inputTpl" [ngTemplateOutletContext]="{ $implicit: rule }"/>
                   </div>
 
-                  <div [ngClass]="getClassNames('ruleActions')">
+                  <div [ngClass]="getClassNames('ruleActions')" class="q-button-wrapper" [class.q-hide-buttons]="hideButtons">
+                    <span *ngIf="hideButtons" class="q-ellipsis">&hellip;</span>
+                    <span class="q-invalid-message" *ngIf="isRuleInvalid(rule, data)">Invalid {{ruleName}}</span>
+                    <div class="q-buttons">
                     <button *ngIf="allowRuleUpDown && data.rules.length > 1" type="button" (click)="moveRuleUp(rule, data)"
                             [ngClass]="getClassNames('button')"
                             [disabled]="disabled || i === 0">
@@ -40,10 +58,14 @@
                             [disabled]="disabled || i === data.rules.length - 1">
                       <i [ngClass]="getClassNames('downIcon')"></i>
                     </button>
-                    <button *ngIf="allowConvertToRuleset" type="button" (click)="convertToRuleset(rule, data)" [ngClass]="getClassNames('button')" [disabled]="disabled">
-                      Convert to Ruleset
+                    <button *ngIf="allowConvertToRuleset" type="button" (click)="convertToRuleset(rule, data)" [title]="'Convert to a ' + rulesetName + ' containing this ' + ruleName" [ngClass]="getClassNames('button')" [disabled]="disabled">
+                      <svg [ngClass]="getClassNames('equalIcon')" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+                        <path d="M1 3h10v2H1zM1 7h10v2H1z"/>
+                      </svg>
+                      {{rulesetName}}
                     </button>
                     <ng-template [ngTemplateOutlet]="_ruleRemoveButtonTpl" [ngTemplateOutletContext]="{ $implicit: rule }"/>
+                    </div>
                   </div>
                 </div>
               </ng-container>
@@ -60,7 +82,8 @@
                                  [parentEmptyWarningTemplate]="parentEmptyWarningTemplate || emptyWarningTemplate" [parentArrowIconTemplate]="parentArrowIconTemplate || arrowIconTemplate"
                                  [parentValue]="data" [classNames]="classNames" [config]="config" [allowRuleset]="allowRuleset"
                                  [allowCollapse]="allowCollapse" [allowNot]="allowNot" [allowConvertToRuleset]="allowConvertToRuleset"
-                                 [allowRuleUpDown]="allowRuleUpDown"
+                                 [allowRuleUpDown]="allowRuleUpDown" [ruleName]="ruleName" [rulesetName]="rulesetName"
+                                 [hideButtons]="hideButtons"
                                  [emptyMessage]="emptyMessage" [operatorMap]="operatorMap">
               </ngx-query-builder>
             </li>
@@ -89,25 +112,33 @@
   </ng-container>
 
   <ng-template #defaultSwitchGroup>
-    <div [ngClass]="getClassNames('switchGroup', 'transition')" *ngIf="data">
-      <div [ngClass]="getClassNames('switchControl')" *ngIf="allowNot">
+    <div [ngClass]="getClassNames('switchGroup', 'transition')" *ngIf="data"
+         (mouseenter)="hoveringSwitchGroup = true" (mouseleave)="hoveringSwitchGroup = false">
+      <div [ngClass]="getClassNames('switchControl')" *ngIf="allowNot && (data.not || (hoveringSwitchGroup && data.rules.length !== 1))">
         <input type="checkbox" [ngClass]="getClassNames('switchRadio')" [(ngModel)]="data.not"
                (ngModelChange)="changeNot($event)" [disabled]="disabled" />
-        <label (click)="changeNot(!data.not)" [ngClass]="getClassNames('switchLabel')">NOT</label>
+        <label (click)="changeNot(!data.not)" [ngClass]="getClassNames('switchLabel')">
+          NOT
+        </label>
       </div>
-      <div [ngClass]="getClassNames('switchControl')">
+      <div [ngClass]="getClassNames('switchControl')"
+           *ngIf="data.condition === 'and' || (hoveringSwitchGroup && data.rules.length !== 1)">
         <input type="radio" [ngClass]="getClassNames('switchRadio')" [(ngModel)]="data.condition" [disabled]=disabled
                value="and" #andOption />
-        <label (click)="changeCondition(andOption.value)" [ngClass]="getClassNames('switchLabel')">AND</label>
+        <label (click)="changeCondition(andOption.value)" [ngClass]="getClassNames('switchLabel')">
+          <ng-container *ngIf="data.rules.length !== 1; else blankAnd">AND</ng-container>
+          <ng-template #blankAnd><span class="q-switch-label-empty">AND</span></ng-template>
+        </label>
       </div>
-      <div [ngClass]="getClassNames('switchControl')">
+      <div [ngClass]="getClassNames('switchControl')"
+           *ngIf="data.condition === 'or' || (hoveringSwitchGroup && data.rules.length !== 1)">
         <input type="radio" [ngClass]="getClassNames('switchRadio')" [(ngModel)]="data.condition" [disabled]=disabled
                value="or" #orOption />
-        <label (click)="changeCondition(orOption.value)" [ngClass]="getClassNames('switchLabel')">OR</label>
+        <label (click)="changeCondition(orOption.value)" [ngClass]="getClassNames('switchLabel')">
+          <ng-container *ngIf="data.rules.length !== 1; else blankOr">OR</ng-container>
+          <ng-template #blankOr><span class="q-switch-label-empty">OR</span></ng-template>
+        </label>
       </div>
-      <span *ngIf="collapsed && config.customCollapsedSummary" [ngClass]="getClassNames('collapsedSummary')">
-        {{ config.customCollapsedSummary(data) }}
-      </span>
     </div>
   </ng-template>
 </ng-template>
@@ -121,12 +152,19 @@
   </ng-container>
 
   <ng-template #defaultButtonGroup>
-    <div [ngClass]="getClassNames('buttonGroup', 'rightAlign')">
+    <div [ngClass]="getClassNames('buttonGroup', 'rightAlign')" class="q-button-wrapper" [class.q-hide-buttons]="hideButtons">
+      <span *ngIf="hideButtons" class="q-ellipsis">&hellip;</span>
+      <span class="q-invalid-message" *ngIf="isRulesetInvalid(data)">Invalid {{rulesetName}}</span>
+      <div class="q-buttons">
       <ng-container *ngIf="!config.rulesLimit || data.rules.length < config.rulesLimit">
         <ng-container *ngTemplateOutlet="_rulesetAddRuleButtonTpl"></ng-container>
         <ng-container *ngIf="!config.levelLimit || level + 1 < config.levelLimit">
           <ng-container *ngTemplateOutlet="_rulesetAddRulesetButtonTpl"></ng-container>
         </ng-container>
+        <button *ngIf="config.listNamedRulesets && config.getNamedRuleset" type="button"
+                (click)="addNamedRuleSet()" [ngClass]="getClassNames('button')" [disabled]="disabled">
+          <i [ngClass]="getClassNames('addIcon')"></i> Named {{rulesetName}}
+        </button>
       </ng-container>
       <ng-container *ngIf="allowRuleUpDown && parentValue && parentValue.rules.length > 1">
         <button type="button" (click)="moveRuleUp(data, parentValue)" [ngClass]="getClassNames('button')"
@@ -139,12 +177,23 @@
         </button>
       </ng-container>
       <button *ngIf="allowConvertToRuleset && parentValue && data.rules.length === 1" type="button"
-              (click)="convertRulesetToRule(data, parentValue)" [ngClass]="getClassNames('button')" [disabled]="disabled">
-        Convert to Rule
+              (click)="convertRulesetToRule(data, parentValue)" [title]="'Embed this  ' + ruleName + ' in it\s parent\'s ' + rulesetName" [ngClass]="getClassNames('button')" [disabled]="disabled">
+        <svg [ngClass]="getClassNames('equalIcon')" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M1 3h10v2H1zM1 7h10v2H1z"/>
+        </svg>
+        {{ruleName}}
       </button>
-      <ng-container *ngIf="!!parentValue && allowRuleset">
+      <button *ngIf="allowConvertToRuleset" type="button"
+              (click)="wrapRuleset(data, parentValue)" [title]="'Wrap this ' + rulesetName + ' in another ' + rulesetName" [ngClass]="getClassNames('button')" [disabled]="disabled">
+        <svg [ngClass]="getClassNames('equalIcon')" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M1 3h10v2H1zM1 7h10v2H1z"/>
+        </svg>
+        {{rulesetName}}
+      </button>
+      <ng-container *ngIf="!!parentValue">
         <ng-container *ngTemplateOutlet="_rulesetRemoveButtonTpl"></ng-container>
       </ng-container>
+      </div>
     </div>
   </ng-template>
 </ng-template>
@@ -157,7 +206,7 @@
 
   <ng-template #defaultRulesetAddRuleButton>
     <button type="button" (click)="addRule()" [ngClass]="getClassNames('button')" [disabled]=disabled>
-      <i [ngClass]="getClassNames('addIcon')"></i> Rule
+      <i [ngClass]="getClassNames('addIcon')"></i> {{ruleName}}
     </button>
   </ng-template>
 </ng-template>
@@ -170,7 +219,7 @@
 
   <ng-template #defaultRulesetAddRulesetButton>
     <button type="button" (click)="addRuleSet()" [ngClass]="getClassNames('button')" *ngIf="allowRuleset" [disabled]=disabled>
-      <i [ngClass]="getClassNames('addIcon')"></i> Ruleset
+      <i [ngClass]="getClassNames('addIcon')"></i> {{rulesetName}}
     </button>
   </ng-template>
 </ng-template>
@@ -242,7 +291,7 @@
 <!--_inputTpl-->
 <ng-template #_inputTpl let-rule>
   <ng-container *ngIf="findTemplateForRule(rule) as template; else defaultInput">
-    <ng-container *ngTemplateOutlet="template; context: getInputContext(rule)"></ng-container>
+    <ng-container *ngTemplateOutlet="template; context: getInputContext(rule, data)"></ng-container>
   </ng-container>
   <ng-template #defaultInput>
     <div [ngClass]="getClassNames('inputControlSize')" [ngSwitch]="getInputType(rule.field, rule.operator || '')">
@@ -256,14 +305,14 @@
              [disabled]="disabled" *ngSwitchCase="'time'" type="time">
       <select [ngClass]="getClassNames('inputControl')" [(ngModel)]="rule.value" (ngModelChange)="changeInput()"
               [disabled]="disabled" *ngSwitchCase="'category'">
-        <option *ngFor="let opt of getOptions(rule.field)" [ngValue]="opt.value">
+        <option *ngFor="let opt of getOptions(rule.field, rule, data)" [ngValue]="opt.value">
           {{opt.name}}
         </option>
       </select>
       <ng-container *ngSwitchCase="'multiselect'">
         <select [ngClass]="getClassNames('inputControl')" [(ngModel)]="rule.value" (ngModelChange)="changeInput()"
                 [disabled]="disabled" multiple>
-          <option *ngFor="let opt of getOptions(rule.field)" [ngValue]="opt.value">
+          <option *ngFor="let opt of getOptions(rule.field, rule, data)" [ngValue]="opt.value">
             {{opt.name}}
           </option>
         </select>
@@ -294,13 +343,13 @@
 <!--_emptyWarningTpl-->
 <ng-template #_emptyWarningTpl let-local>
   <ng-container *ngIf="getEmptyWarningTemplate() as template; else defaultEmptyWarning">
-    <ng-container *ngIf="local.invalid">
+    <ng-container *ngIf="local.invalidEmpty">
       <ng-container *ngTemplateOutlet="template; context: getEmptyWarningContext()"></ng-container>
     </ng-container>
   </ng-container>
 
   <ng-template #defaultEmptyWarning>
-    <p [ngClass]="getClassNames('emptyWarning')" *ngIf="local.invalid">
+    <p [ngClass]="getClassNames('emptyWarning')" *ngIf="local.invalidEmpty">
       {{emptyMessage}}
     </p>
   </ng-template>

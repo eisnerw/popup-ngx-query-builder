@@ -40,11 +40,37 @@ export class QueryInputComponent {
   // Default configuration for the query builder
   defaultConfig: QueryBuilderConfig = {
     fields: {
-      name: { name: 'Name', type: 'string' },
-      age: { name: 'Age', type: 'number' },
-      email: { name: 'Email', type: 'string' },
-      active: { name: 'Active', type: 'boolean' },
-      date: { name: 'Date', type: 'date' }
+      document: { name: 'Document', type: 'string', operators: ["contains"]},
+      // lname: { name: 'Last Name', type: 'string', operators: ['=', '!=', 'contains', 'like', 'exists'] },
+      lname: {
+        name: 'Last Name',
+        type: 'category'
+      },
+      fname: { name: 'First Name', type: 'string', operators: ['=', '!=', 'contains', 'like', 'exists'] },
+      isAlive: { name: 'Alive?', type: 'boolean' },
+      categories: { name: 'Category', type: 'string', operators: ["contains", "exists"]},
+      dob: {
+        name: 'Birthday', type: 'date', operators: ['=', '<=', '>', '<', '>='],
+        defaultValue: (() => new Date())
+      },
+      sign: {
+        name: 'Astrological Sign',
+        type: 'category',
+        options: [
+          { name: 'Aries', value: 'aries' },
+          { name: 'Taurus', value: 'taurus' },
+          { name: 'Gemini', value: 'gemini' },
+          { name: 'Cancer', value: 'cancer' },
+          { name: 'Leo', value: 'leo' },
+          { name: 'Virgo', value: 'virgo' },
+          { name: 'Libra', value: 'libra' },
+          { name: 'Scorpio', value: 'scorpio' },
+          { name: 'Sagittarius', value: 'sagittarius' },
+          { name: 'Capricorn', value: 'capricorn' },
+          { name: 'Aquarius', value: 'aquarius' },
+          { name: 'Pisces    ', value: 'pisces' }      
+        ]
+      }
     }
   };
 
