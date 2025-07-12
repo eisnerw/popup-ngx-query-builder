@@ -25,12 +25,14 @@
   styleClass="query-builder-dialog"
   [baseZIndex]="10000">
   
-  <ngx-query-builder 
-    [(ngModel)]="builderQuery" 
+  <ngx-query-builder
+    [(ngModel)]="builderQuery"
     [config]="queryBuilderConfig"
     [allowNot]="allowNot"
     [allowConvertToRuleset]="allowConvertToRuleset"
-    [allowRuleUpDown]="allowRuleUpDown"></ngx-query-builder>
+    [allowRuleUpDown]="allowRuleUpDown"
+    [ruleName]="ruleName"
+    [rulesetName]="rulesetName"></ngx-query-builder>
   
   <ng-template pTemplate="footer">
     <div class="dialog-footer">

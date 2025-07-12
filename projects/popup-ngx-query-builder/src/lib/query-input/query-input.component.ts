@@ -6,7 +6,10 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TreeModule } from 'primeng/tree';
-import { QueryBuilderModule, QueryBuilderConfig, RuleSet } from 'ngx-query-builder';
+import { QueryBuilderModule, QueryBuilderConfig, RuleSet, Rule } from 'ngx-query-builder';
+import { MatDialog } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
+import { EditRulesetDialogComponent } from './edit-ruleset-dialog.component';
 
 @Component({
   selector: 'lib-query-input',
@@ -31,11 +34,16 @@ export class QueryInputComponent {
   @Input() allowNot = true;
   @Input() allowConvertToRuleset = true;
   @Input() allowRuleUpDown = true;
+  @Input() ruleName = 'Rule';
+  @Input() rulesetName = 'Ruleset';
   @Output() queryChange = new EventEmitter<string>();
 
   editing = false;
   showBuilder = false;
   builderQuery: RuleSet = { condition: 'and', rules: [] };
+  namedRulesets: Record<string, RuleSet> = {};
+
+  constructor(private dialog: MatDialog) {}
 
   // Default configuration for the query builder
   defaultConfig: QueryBuilderConfig = {
@@ -75,7 +83,16 @@ export class QueryInputComponent {
   };
 
   get queryBuilderConfig(): QueryBuilderConfig {
-    return this.config || this.defaultConfig;
+    const base = this.config || this.defaultConfig;
+    return {
+      ...base,
+      listNamedRulesets: this.listNamedRulesets.bind(this),
+      getNamedRuleset: this.getNamedRuleset.bind(this),
+      saveNamedRuleset: this.saveNamedRuleset.bind(this),
+      deleteNamedRuleset: this.deleteNamedRuleset.bind(this),
+      editNamedRuleset: this.editNamedRuleset.bind(this),
+      customCollapsedSummary: this.collapsedSummary.bind(this)
+    } as QueryBuilderConfig;
   }
 
   clickSearch() {
@@ -165,5 +182,46 @@ export class QueryInputComponent {
 
   cancelQuery() {
     this.showBuilder = false;
+  }
+
+  listNamedRulesets(): string[] {
+    return Object.keys(this.namedRulesets);
+  }
+
+  getNamedRuleset(name: string): RuleSet {
+    return JSON.parse(JSON.stringify(this.namedRulesets[name]));
+  }
+
+  saveNamedRuleset(rs: RuleSet) {
+    if (rs.name) {
+      this.namedRulesets[rs.name] = JSON.parse(JSON.stringify(rs));
+    }
+  }
+
+  deleteNamedRuleset(name: string) {
+    delete this.namedRulesets[name];
+  }
+
+  async editNamedRuleset(rs: RuleSet): Promise<RuleSet | null> {
+    const result = await firstValueFrom(this.dialog.open(EditRulesetDialogComponent, {
+      data: { ruleset: JSON.parse(JSON.stringify(rs)), rulesetName: this.rulesetName, validate: (r: any) => !!r && typeof r === 'object' && Array.isArray(r.rules) && r.rules.length > 0 }
+    }).afterClosed());
+    return result || null;
+  }
+
+  collapsedSummary(ruleset: RuleSet): string {
+    const names = new Set<string>();
+    const walk = (rs: RuleSet) => {
+      rs.rules.forEach(r => {
+        if ((r as Rule).field) {
+          const field = this.queryBuilderConfig.fields[(r as Rule).field];
+          names.add(field?.name || (r as Rule).field);
+        } else if ((r as RuleSet).rules) {
+          walk(r as RuleSet);
+        }
+      });
+    };
+    walk(ruleset);
+    return Array.from(names).join(', ');
   }
 }
