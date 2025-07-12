@@ -1,5 +1,13 @@
+// Ensure Angular Material dialogs appear above the PrimeNG query builder dialog
+// by increasing the default overlay z-index. PrimeNG's dialog uses a base
+// z-index of 10000, so we push Material dialogs higher to keep them visible
+// and modal.
 ::ng-deep .cdk-overlay-container {
-  z-index: 11000 !important;
+  z-index: 20000 !important;
+}
+
+::ng-deep .cdk-overlay-backdrop {
+  z-index: 1000 !important;
 }
 
 .query-input {
