@@ -10,6 +10,17 @@
   z-index: 1000 !important;
 }
 
+::ng-deep .cdk-overlay-pane.resizable-dialog {
+  resize: both;
+  overflow: auto;
+}
+
+::ng-deep .cdk-overlay-pane.resizable-dialog .mat-dialog-container {
+  max-width: none;
+  max-height: none;
+  height: 100%;
+}
+
 .query-input {
   display: flex;
   align-items: center;

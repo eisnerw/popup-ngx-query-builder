@@ -204,7 +204,14 @@ export class QueryInputComponent {
 
   async editNamedRuleset(rs: RuleSet): Promise<RuleSet | null> {
     const result = await firstValueFrom(this.dialog.open(EditRulesetDialogComponent, {
-      data: { ruleset: JSON.parse(JSON.stringify(rs)), rulesetName: this.rulesetName, validate: (r: any) => !!r && typeof r === 'object' && Array.isArray(r.rules) && r.rules.length > 0 }
+      data: {
+        ruleset: JSON.parse(JSON.stringify(rs)),
+        rulesetName: this.rulesetName,
+        validate: (r: any) => !!r && typeof r === 'object' && Array.isArray(r.rules) && r.rules.length > 0
+      },
+      width: '800px',
+      panelClass: 'resizable-dialog',
+      autoFocus: false
     }).afterClosed());
     return result || null;
   }
