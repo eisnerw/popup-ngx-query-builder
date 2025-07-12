@@ -7,7 +7,7 @@
 }
 
 ::ng-deep .cdk-overlay-backdrop {
-  z-index: 20001 !important;
+  z-index: 1000 !important;
 }
 
 ::ng-deep .cdk-overlay-pane.resizable-dialog {
