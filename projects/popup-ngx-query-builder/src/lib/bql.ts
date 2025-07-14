@@ -81,7 +81,19 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig): RuleSet
     if (tok.value === '!') { consume(); const inner = parsePrimary(); inner.not = !inner.not; return inner; }
     if (tok.type === 'word' && isRulesetName(tok.value)) {
       consume();
-      return { condition: 'and', rules: [], name: tok.value };
+      const name = tok.value;
+      let stored: RuleSet | undefined;
+      if (config.getNamedRuleset) {
+        try {
+          stored = config.getNamedRuleset(name);
+        } catch {
+          stored = undefined;
+        }
+      }
+      if (stored) {
+        return { ...JSON.parse(JSON.stringify(stored)), name };
+      }
+      return { condition: 'and', rules: [], name };
     }
     // value or field rule
     const first = consume();

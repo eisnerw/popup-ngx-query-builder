@@ -1,5 +1,5 @@
 import { bqlToRuleset, rulesetToBql } from './bql';
-import { QueryBuilderConfig, RuleSet } from 'ngx-query-builder';
+import { QueryBuilderConfig, RuleSet, Rule } from 'ngx-query-builder';
 
 describe('BQL named ruleset support', () => {
   const config: QueryBuilderConfig = { fields: {} } as any;
@@ -19,5 +19,18 @@ describe('BQL named ruleset support', () => {
     expect(rs.name).toBe('TEST');
     expect(rs.not).toBeTrue();
     expect(rulesetToBql(rs, config)).toBe('!TEST');
+  });
+
+  it('should load named ruleset from config', () => {
+    const get = jasmine.createSpy('get').and.returnValue({
+      condition: 'and',
+      rules: [{ field: 'a', operator: '=', value: 1 }]
+    });
+    const cfg: QueryBuilderConfig = { fields: {}, getNamedRuleset: get } as any;
+    const rs = bqlToRuleset('TEST', cfg);
+    expect(get).toHaveBeenCalledWith('TEST');
+    expect(rs.name).toBe('TEST');
+    expect(rs.rules.length).toBe(1);
+    expect((rs.rules[0] as Rule).field).toBe('a');
   });
 });
