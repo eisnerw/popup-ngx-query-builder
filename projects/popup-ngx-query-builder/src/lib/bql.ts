@@ -146,23 +146,50 @@ export function rulesetToBql(rs: RuleSet, config: QueryBuilderConfig): string {
     return `${rule.field}${isAlphaOperator(op) ? ' ' : ''}${op}${isAlphaOperator(op) ? ' ' : ''}${valueToString(rule.value)}`;
   }
 
-  function rulesetString(r: RuleSet, top = false): string {
-    if (r.rules.length === 1 && !r.not) {
+  function isRule(obj: Rule | RuleSet): obj is Rule {
+    return (obj as Rule).field !== undefined;
+  }
+
+  function isAtomic(rs: RuleSet): boolean {
+    if (rs.not) return false;
+    if (rs.rules.length !== 1) return false;
+    const only = rs.rules[0];
+    return isRule(only) || (!isRule(only) && isAtomic(only as RuleSet));
+  }
+
+  function prec(cond: 'and' | 'or'): number { return cond === 'or' ? 1 : 2; }
+
+  function rulesetString(r: RuleSet, parent?: 'and' | 'or'): string {
+    if (!r.not && r.rules.length === 1) {
       const only = r.rules[0];
-      if ((only as Rule).field) return ruleToString(only as Rule);
-      return rulesetString(only as RuleSet);
+      if (isRule(only)) return ruleToString(only);
+      return rulesetString(only as RuleSet, parent);
     }
+
     const parts = r.rules.map((child) => {
-      if ((child as Rule).field) return ruleToString(child as Rule);
-      const inner = rulesetString(child as RuleSet);
-      return `(${inner})`;
+      if (isRule(child)) return ruleToString(child);
+      return rulesetString(child as RuleSet, r.condition as 'and' | 'or');
     });
+
     const joiner = r.condition === 'or' ? ' | ' : ' & ';
     let result = parts.join(joiner);
-    if (!top) result = `(${result})`;
-    if (r.not) result = `!${result}`;
+
+    if (!r.not && parent && prec(r.condition as 'and' | 'or') < prec(parent)) {
+      result = `(${result})`;
+    }
+
+    if (r.not) {
+      if (r.rules.length === 1 && !isRule(r.rules[0]) && isAtomic(r.rules[0] as RuleSet)) {
+        result = `!${result}`;
+      } else if (r.rules.length === 1 && isRule(r.rules[0])) {
+        result = `!${result}`;
+      } else {
+        result = `!(${result})`;
+      }
+    }
+
     return result;
   }
-  return rulesetString(rs, true);
+  return rulesetString(rs);
 }
 
