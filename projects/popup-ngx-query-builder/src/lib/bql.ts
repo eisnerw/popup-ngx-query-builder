@@ -1,0 +1,168 @@
+export interface BqlParseOptions {
+  config: import('ngx-query-builder').QueryBuilderConfig;
+}
+
+import { RuleSet, Rule, QueryBuilderConfig } from 'ngx-query-builder';
+
+interface Token {
+  type: 'symbol' | 'word' | 'string' | 'operator';
+  value: string;
+}
+
+function tokenize(input: string): Token[] {
+  const tokens: Token[] = [];
+  let i = 0;
+  while (i < input.length) {
+    const ch = input[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (ch === '(' || ch === ')' || ch === '!' || ch === '&' || ch === '|') {
+      tokens.push({ type: 'symbol', value: ch });
+      i++; continue;
+    }
+    if (ch === '"') {
+      let j = i + 1; let str = '';
+      while (j < input.length) {
+        if (input[j] === '\\') { str += input[j+1]; j += 2; continue; }
+        if (input[j] === '"') { break; }
+        str += input[j];
+        j++;
+      }
+      tokens.push({ type: 'string', value: JSON.parse(input.slice(i, j+1)) });
+      i = j + 1; continue;
+    }
+    if (/=|!|<|>/.test(ch)) {
+      let op = ch; i++;
+      if (i < input.length && input[i] === '=') { op += '='; i++; }
+      tokens.push({ type: 'operator', value: op });
+      continue;
+    }
+    let j = i;
+    while (j < input.length && !/\s|\(|\)|!|&|\||=|<|>/.test(input[j])) j++;
+    const word = input.slice(i, j);
+    tokens.push({ type: 'word', value: word });
+    i = j;
+  }
+  return tokens;
+}
+
+function isAlphaOperator(op: string): boolean {
+  return /^[A-Z][A-Z_]*$/.test(op);
+}
+
+function toOperatorToken(op: string): string {
+  return /^[A-Za-z]+$/.test(op) ? op.toUpperCase() : op;
+}
+
+function parseValue(token: Token, field: string, config: QueryBuilderConfig): any {
+  const fieldConf = config.fields[field];
+  if (!fieldConf) return token.value;
+  const type = fieldConf.type;
+  const v = token.value;
+  if (type === 'number') return Number(v);
+  if (type === 'boolean') return v === 'true';
+  if (type === 'date') return new Date(v);
+  return v;
+}
+
+export function bqlToRuleset(input: string, config: QueryBuilderConfig): RuleSet {
+  const tokens = tokenize(input);
+  let pos = 0;
+  function peek() { return tokens[pos]; }
+  function consume() { return tokens[pos++]; }
+
+  function parsePrimary(): RuleSet {
+    const tok = peek();
+    if (!tok) return { condition: 'and', rules: [] };
+    if (tok.value === '(') { consume(); const expr = parseExpression(); if (peek() && peek().value === ')') consume(); return expr; }
+    if (tok.value === '!') { consume(); const inner = parsePrimary(); inner.not = !inner.not; return inner; }
+    // value or field rule
+    const first = consume();
+    const next = peek();
+    if (next && next.type === 'operator' || (next && next.type === 'word' && isAlphaOperator(next.value))) {
+      const opTok = consume();
+      const valTok = consume();
+      if (!valTok) {
+        return { condition: 'and', rules: [] };
+      }
+      const field = first.value;
+      const operator = opTok.type === 'word' ? opTok.value.toLowerCase() : opTok.value;
+      const value = valTok.type === 'string' ? valTok.value : parseValue(valTok, field, config);
+      return { condition: 'and', rules: [{ field, operator, value }] };
+    } else {
+      const value = first.type === 'string' ? first.value : first.value;
+      return { condition: 'and', rules: [{ field: 'document', operator: 'contains', value: parseValue({type:'word', value}, 'document', config) }] };
+    }
+  }
+
+  function parseUnary(): RuleSet {
+    if (peek() && peek().value === '!') {
+      consume();
+      const rs = parseUnary();
+      rs.not = !rs.not;
+      return rs;
+    }
+    return parsePrimary();
+  }
+
+  function merge(left: RuleSet, right: RuleSet, cond: 'and' | 'or'): RuleSet {
+    if (left.condition === cond && !left.not) {
+      left.rules.push(...right.rules);
+      return left;
+    }
+    return { condition: cond, rules: [left, right] };
+  }
+
+  function parseAnd(): RuleSet {
+    let left = parseUnary();
+    while (peek() && peek().value === '&') { consume(); const right = parseUnary(); left = merge(left, right, 'and'); }
+    return left;
+  }
+
+  function parseOr(): RuleSet {
+    let left = parseAnd();
+    while (peek() && peek().value === '|') { consume(); const right = parseAnd(); left = merge(left, right, 'or'); }
+    return left;
+  }
+
+  function parseExpression(): RuleSet { return parseOr(); }
+
+  const result = parseExpression();
+  return result;
+}
+
+function valueToString(value: any): string {
+  if (typeof value === 'string' && /^[A-Za-z0-9]+$/.test(value)) {
+    return value;
+  }
+  return JSON.stringify(value);
+}
+
+export function rulesetToBql(rs: RuleSet, config: QueryBuilderConfig): string {
+  function ruleToString(rule: Rule): string {
+    if (rule.field === 'document' && rule.operator.toLowerCase() === 'contains') {
+      return valueToString(rule.value);
+    }
+    const op = toOperatorToken(rule.operator);
+    return `${rule.field}${isAlphaOperator(op) ? ' ' : ''}${op}${isAlphaOperator(op) ? ' ' : ''}${valueToString(rule.value)}`;
+  }
+
+  function rulesetString(r: RuleSet, top = false): string {
+    if (r.rules.length === 1 && !r.not) {
+      const only = r.rules[0];
+      if ((only as Rule).field) return ruleToString(only as Rule);
+      return rulesetString(only as RuleSet);
+    }
+    const parts = r.rules.map((child) => {
+      if ((child as Rule).field) return ruleToString(child as Rule);
+      const inner = rulesetString(child as RuleSet);
+      return `(${inner})`;
+    });
+    const joiner = r.condition === 'or' ? ' | ' : ' & ';
+    let result = parts.join(joiner);
+    if (!top) result = `(${result})`;
+    if (r.not) result = `!${result}`;
+    return result;
+  }
+  return rulesetString(rs, true);
+}
+

@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TreeModule } from 'primeng/tree';
 import { QueryBuilderModule, QueryBuilderConfig, RuleSet, Rule } from 'ngx-query-builder';
+import { bqlToRuleset, rulesetToBql } from '../bql';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { EditRulesetDialogComponent } from './edit-ruleset-dialog.component';
@@ -123,8 +124,7 @@ export class QueryInputComponent {
 
   parseQuery(text: string): RuleSet {
     try {
-      const parsed = JSON.parse(text);
-      return parsed && typeof parsed === 'object' ? parsed : { condition: 'and', rules: [] };
+      return bqlToRuleset(text, this.queryBuilderConfig);
     } catch {
       return { condition: 'and', rules: [] };
     }
@@ -132,9 +132,8 @@ export class QueryInputComponent {
 
   stringifyQuery(obj: RuleSet): string {
     try {
-      // Clean up the query object before stringifying
       const cleanQuery = this.cleanQuery(obj);
-      return JSON.stringify(cleanQuery, null, 2);
+      return rulesetToBql(cleanQuery, this.queryBuilderConfig);
     } catch {
       return '';
     }
