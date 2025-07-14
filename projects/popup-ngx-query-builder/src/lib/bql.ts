@@ -77,7 +77,13 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig): RuleSet
   function parsePrimary(): RuleSet {
     const tok = peek();
     if (!tok) return { condition: 'and', rules: [] };
-    if (tok.value === '(') { consume(); const expr = parseExpression(); if (peek() && peek().value === ')') consume(); return expr; }
+    if (tok.value === '(') {
+      consume();
+      const expr = parseExpression();
+      if (peek() && peek().value === ')') consume();
+      expr.isChild = true;
+      return expr;
+    }
     if (tok.value === '!') { consume(); const inner = parsePrimary(); inner.not = !inner.not; return inner; }
     if (tok.type === 'word' && isRulesetName(tok.value)) {
       consume();
@@ -125,7 +131,15 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig): RuleSet
   }
 
   function merge(left: RuleSet, right: RuleSet, cond: 'and' | 'or'): RuleSet {
-    if (left.condition === cond && !left.not) {
+    if (
+      left.condition === cond &&
+      !left.not &&
+      !right.not &&
+      !left.name &&
+      !right.name &&
+      !left.isChild &&
+      !right.isChild
+    ) {
       left.rules.push(...right.rules);
       return left;
     }
@@ -186,7 +200,9 @@ export function rulesetToBql(rs: RuleSet, config: QueryBuilderConfig): string {
     if (!r.not && r.rules.length === 1) {
       const only = r.rules[0];
       if (isRule(only)) return ruleToString(only);
-      return rulesetString(only as RuleSet, parent);
+      if (!(only as RuleSet).name) {
+        return rulesetString(only as RuleSet, parent);
+      }
     }
 
     const parts = r.rules.map((child) => {

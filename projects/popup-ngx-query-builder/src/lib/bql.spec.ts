@@ -33,4 +33,26 @@ describe('BQL named ruleset support', () => {
     expect(rs.rules.length).toBe(1);
     expect((rs.rules[0] as Rule).field).toBe('a');
   });
+
+  it('should create rulesets for parentheses', () => {
+    const cfg: QueryBuilderConfig = { fields: { a: { type: 'string' }, b: { type: 'string' } } } as any;
+    const rs = bqlToRuleset('(a=1) & (b=2)', cfg);
+    expect(rs.rules.length).toBe(2);
+    const first = rs.rules[0] as RuleSet;
+    expect(first.rules.length).toBe(1);
+    expect(first.isChild).toBeTrue();
+  });
+
+  it('should keep named rulesets when parsing', () => {
+    const rs = bqlToRuleset('ONE & TWO', config);
+    expect(rs.rules.length).toBe(2);
+    expect((rs.rules[0] as RuleSet).name).toBe('ONE');
+    expect((rs.rules[1] as RuleSet).name).toBe('TWO');
+  });
+
+  it('should omit redundant parentheses when stringifying', () => {
+    const cfg: QueryBuilderConfig = { fields: { a: { type: 'string' } } } as any;
+    const rs = bqlToRuleset('(a=1)', cfg);
+    expect(rulesetToBql(rs, cfg)).toBe('a=1');
+  });
 });
