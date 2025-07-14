@@ -232,3 +232,79 @@ export function rulesetToBql(rs: RuleSet, config: QueryBuilderConfig): string {
   return rulesetString(rs);
 }
 
+function validateRule(rule: Rule, parent: RuleSet, config: QueryBuilderConfig): boolean {
+  const fieldConf = config.fields[rule.field];
+  if (!fieldConf) return false;
+
+  let operators = fieldConf.operators || [];
+  if (config.getOperators) {
+    try {
+      operators = config.getOperators(rule.field, fieldConf);
+    } catch {
+      operators = fieldConf.operators || [];
+    }
+  }
+  if (operators.length && !operators.includes(rule.operator)) {
+    return false;
+  }
+
+  let allowedValues: any[] | undefined;
+  if (fieldConf.options) {
+    allowedValues = fieldConf.options.map(o => o.value);
+  }
+  if (fieldConf.categorySource) {
+    try {
+      const cats = fieldConf.categorySource(rule, parent);
+      if (cats && cats.length) {
+        allowedValues = cats;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if ((fieldConf.type === 'category' || allowedValues) && allowedValues && allowedValues.length) {
+    if (!allowedValues.includes(rule.value)) {
+      return false;
+    }
+  }
+
+  if (fieldConf.validator) {
+    try {
+      const res = fieldConf.validator(rule, parent);
+      if (res === false || res === null) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function validateRuleset(rs: RuleSet, config: QueryBuilderConfig, parent?: RuleSet): boolean {
+  for (const child of rs.rules) {
+    const asRule = child as Rule;
+    if (asRule.field !== undefined) {
+      if (!validateRule(asRule, rs, config)) {
+        return false;
+      }
+    } else if ((child as RuleSet).rules) {
+      if (!validateRuleset(child as RuleSet, config, rs)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+export function validateBql(bql: string, config: QueryBuilderConfig): boolean {
+  try {
+    const rs = bqlToRuleset(bql, config);
+    return validateRuleset(rs, config);
+  } catch {
+    return false;
+  }
+}
+

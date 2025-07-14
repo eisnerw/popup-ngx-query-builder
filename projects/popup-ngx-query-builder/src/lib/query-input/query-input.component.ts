@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -7,7 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TreeModule } from 'primeng/tree';
 import { QueryBuilderModule, QueryBuilderConfig, RuleSet, Rule } from 'ngx-query-builder';
-import { bqlToRuleset, rulesetToBql } from '../bql';
+import { bqlToRuleset, rulesetToBql, validateBql } from '../bql';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { EditRulesetDialogComponent } from './edit-ruleset-dialog.component';
@@ -28,7 +28,7 @@ import { EditRulesetDialogComponent } from './edit-ruleset-dialog.component';
   styleUrls: ['./query-input.component.scss'],
   templateUrl: './query-input.component.html'
 })
-export class QueryInputComponent {
+export class QueryInputComponent implements OnInit {
   @Input() placeholder = 'Enter query';
   @Input() query = '';
   @Input() config?: QueryBuilderConfig;
@@ -43,8 +43,22 @@ export class QueryInputComponent {
   showBuilder = false;
   builderQuery: RuleSet = { condition: 'and', rules: [] };
   namedRulesets: Record<string, RuleSet> = {};
+  validQuery = true;
 
   constructor(private dialog: MatDialog) {}
+
+  ngOnInit(): void {
+    this.onQueryChange();
+  }
+
+  startEdit() {
+    this.editing = true;
+    this.onQueryChange();
+  }
+
+  onQueryChange() {
+    this.validQuery = validateBql(this.query, this.queryBuilderConfig);
+  }
 
   // Default configuration for the query builder
   defaultConfig: QueryBuilderConfig = {
@@ -109,6 +123,7 @@ export class QueryInputComponent {
 
   builderApplied(q: RuleSet) {
     this.query = this.stringifyQuery(q);
+    this.onQueryChange();
     this.queryChange.emit(this.query);
     this.showBuilder = false;
   }

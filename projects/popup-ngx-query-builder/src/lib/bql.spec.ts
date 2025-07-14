@@ -1,4 +1,4 @@
-import { bqlToRuleset, rulesetToBql } from './bql';
+import { bqlToRuleset, rulesetToBql, validateBql } from './bql';
 import { QueryBuilderConfig, RuleSet, Rule } from 'ngx-query-builder';
 
 describe('BQL named ruleset support', () => {
@@ -54,5 +54,30 @@ describe('BQL named ruleset support', () => {
     const cfg: QueryBuilderConfig = { fields: { a: { type: 'string' } } } as any;
     const rs = bqlToRuleset('(a=1)', cfg);
     expect(rulesetToBql(rs, cfg)).toBe('a=1');
+  });
+});
+
+describe('validateBql', () => {
+  const cfg: QueryBuilderConfig = {
+    fields: {
+      sign: { name: 'Sign', type: 'category', options: [{ name: 'Aries', value: 'aries' }] },
+      age: { name: 'Age', type: 'number', operators: ['=', '>'] }
+    }
+  } as any;
+
+  it('should accept valid category value', () => {
+    expect(validateBql('sign=aries', cfg)).toBeTrue();
+  });
+
+  it('should reject invalid category value', () => {
+    expect(validateBql('sign=taurus', cfg)).toBeFalse();
+  });
+
+  it('should reject invalid operator', () => {
+    expect(validateBql('age<10', cfg)).toBeFalse();
+  });
+
+  it('should return false on parse error', () => {
+    expect(validateBql('(age=1', cfg)).toBeFalse();
   });
 });
