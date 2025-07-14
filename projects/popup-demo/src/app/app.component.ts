@@ -19,17 +19,6 @@ export class AppComponent {
   }
 
   getFormattedQuery(): string {
-    if (!this.currentQuery) {
-      return '';
-    }
-    
-    try {
-      // If the currentQuery is already a JSON string, parse and re-stringify with formatting
-      const parsed = typeof this.currentQuery === 'string' ? JSON.parse(this.currentQuery) : this.currentQuery;
-      return JSON.stringify(parsed, null, 2);
-    } catch (e) {
-      // If parsing fails, return the currentQuery as is
-      return this.currentQuery;
-    }
+    return this.currentQuery;
   }
 }
