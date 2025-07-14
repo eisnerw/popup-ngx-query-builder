@@ -9,6 +9,10 @@ interface Token {
   value: string;
 }
 
+function isRulesetName(name: string): boolean {
+  return /^[A-Z0-9_]+$/.test(name) && /[A-Z]/.test(name);
+}
+
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
   let i = 0;
@@ -75,6 +79,10 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig): RuleSet
     if (!tok) return { condition: 'and', rules: [] };
     if (tok.value === '(') { consume(); const expr = parseExpression(); if (peek() && peek().value === ')') consume(); return expr; }
     if (tok.value === '!') { consume(); const inner = parsePrimary(); inner.not = !inner.not; return inner; }
+    if (tok.type === 'word' && isRulesetName(tok.value)) {
+      consume();
+      return { condition: 'and', rules: [], name: tok.value };
+    }
     // value or field rule
     const first = consume();
     const next = peek();
@@ -160,6 +168,9 @@ export function rulesetToBql(rs: RuleSet, config: QueryBuilderConfig): string {
   function prec(cond: 'and' | 'or'): number { return cond === 'or' ? 1 : 2; }
 
   function rulesetString(r: RuleSet, parent?: 'and' | 'or'): string {
+    if (r.name) {
+      return r.not ? `!${r.name}` : r.name;
+    }
     if (!r.not && r.rules.length === 1) {
       const only = r.rules[0];
       if (isRule(only)) return ruleToString(only);
