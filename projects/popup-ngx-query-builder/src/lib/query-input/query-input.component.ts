@@ -165,6 +165,9 @@ export class QueryInputComponent {
     if (query.not !== undefined) {
       cleaned.not = query.not;
     }
+    if (query.name !== undefined){
+      cleaned.name = query.name;
+    }
     if (query.collapsed !== undefined) {
       cleaned.collapsed = query.collapsed;
     }
