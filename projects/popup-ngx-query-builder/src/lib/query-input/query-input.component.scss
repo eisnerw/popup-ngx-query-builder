@@ -50,6 +50,9 @@
     border: none;
     outline: none;
     padding: 4px;
+    &.invalid {
+      background: #ffe5e5;
+    }
   }
   
   .btn-group {

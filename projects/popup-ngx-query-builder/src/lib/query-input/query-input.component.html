@@ -1,14 +1,14 @@
 <div class="query-input">
   <button pButton icon="pi pi-search" class="search-btn" (click)="clickSearch()"></button>
 
-  <div class="text" *ngIf="!editing" (click)="editing = true">
+  <div class="text" *ngIf="!editing" (click)="startEdit()">
     <span [ngClass]="{'placeholder': !query}">{{ query || placeholder }}</span>
   </div>
-  <input pInputText *ngIf="editing" [(ngModel)]="query" (keyup.enter)="acceptEdit()" />
+  <input pInputText *ngIf="editing" [(ngModel)]="query" (ngModelChange)="onQueryChange()" (keyup.enter)="acceptEdit()" [ngClass]="{'invalid': !validQuery}" />
 
   <div class="btn-group" *ngIf="editing">
     <button pButton icon="pi pi-times" (click)="cancelEdit()"></button>
-    <button pButton icon="pi pi-check" (click)="acceptEdit()"></button>
+    <button pButton icon="pi pi-check" (click)="acceptEdit()" [disabled]="!validQuery"></button>
   </div>
 </div>
 
