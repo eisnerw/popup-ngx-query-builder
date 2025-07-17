@@ -133,6 +133,9 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
     if (peek() && peek().value === '!') {
       consume();
       const rs = parseUnary();
+      if (rs.name) {
+        return { condition: 'and', rules: [rs], not: true };
+      }
       rs.not = !rs.not;
       return rs;
     }
@@ -206,6 +209,12 @@ export function rulesetToBql(rs: RuleSet, config: QueryBuilderConfig): string {
   function rulesetString(r: RuleSet, parent?: 'and' | 'or'): string {
     if (r.name) {
       return r.not ? `!${r.name}` : r.name;
+    }
+    if (r.not && r.rules.length === 1 && !isRule(r.rules[0])) {
+      const child = r.rules[0] as RuleSet;
+      if (child.name && !child.not) {
+        return `!${child.name}`;
+      }
     }
     if (!r.not && r.rules.length === 1) {
       const only = r.rules[0];
