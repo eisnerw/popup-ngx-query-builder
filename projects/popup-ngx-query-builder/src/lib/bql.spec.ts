@@ -80,4 +80,8 @@ describe('validateBql', () => {
   it('should return false on parse error', () => {
     expect(validateBql('(age=1', cfg)).toBeFalse();
   });
+
+  it('should reject queries with trailing text', () => {
+    expect(validateBql('sign=aries trailing', cfg)).toBeFalse();
+  });
 });
