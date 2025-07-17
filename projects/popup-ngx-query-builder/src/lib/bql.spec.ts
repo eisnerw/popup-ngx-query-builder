@@ -88,4 +88,12 @@ describe('validateBql', () => {
   it('should reject queries with dangling operator', () => {
     expect(validateBql('sign=aries &', cfg)).toBeFalse();
   });
+
+  it('should reject unbalanced parentheses', () => {
+    expect(validateBql('(xx', cfg)).toBeFalse();
+  });
+
+  it('should reject unknown named rulesets', () => {
+    expect(validateBql('ABC', cfg)).toBeFalse();
+  });
 });
