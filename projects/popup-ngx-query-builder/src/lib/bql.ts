@@ -134,7 +134,16 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
       consume();
       const rs = parseUnary();
       if (rs.name) {
-        return { condition: 'and', rules: [rs], not: true };
+        let stored: RuleSet | undefined;
+        if (config.getNamedRuleset) {
+          try {
+            stored = config.getNamedRuleset(rs.name);
+          } catch {
+            stored = undefined;
+          }
+        }
+        const child = stored ? { ...JSON.parse(JSON.stringify(stored)), name: rs.name } : rs;
+        return { condition: 'and', rules: [child], not: true };
       }
       rs.not = !rs.not;
       return rs;

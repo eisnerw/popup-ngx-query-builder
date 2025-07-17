@@ -34,6 +34,21 @@ describe('BQL named ruleset support', () => {
     expect((rs.rules[0] as Rule).field).toBe('a');
   });
 
+  it('should load negated named ruleset from config', () => {
+    const get = jasmine.createSpy('get').and.returnValue({
+      condition: 'and',
+      rules: [{ field: 'a', operator: '=', value: 1 }]
+    });
+    const cfg: QueryBuilderConfig = { fields: {}, getNamedRuleset: get } as any;
+    const rs = bqlToRuleset('!TEST', cfg);
+    expect(get).toHaveBeenCalledWith('TEST');
+    expect(rs.not).toBeTrue();
+    expect(rs.rules.length).toBe(1);
+    const child = rs.rules[0] as RuleSet;
+    expect(child.name).toBe('TEST');
+    expect((child.rules[0] as Rule).field).toBe('a');
+  });
+
   it('should create rulesets for parentheses', () => {
     const cfg: QueryBuilderConfig = { fields: { a: { type: 'string' }, b: { type: 'string' } } } as any;
     const rs = bqlToRuleset('(a=1) & (b=2)', cfg);
