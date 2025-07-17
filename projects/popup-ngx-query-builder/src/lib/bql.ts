@@ -68,7 +68,9 @@ function parseValue(token: Token, field: string, config: QueryBuilderConfig): an
   return v;
 }
 
-export function bqlToRuleset(input: string, config: QueryBuilderConfig): RuleSet {
+export interface ParseInfo { index: number; length: number }
+
+export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: ParseInfo): RuleSet {
   const tokens = tokenize(input);
   let pos = 0;
   function peek() { return tokens[pos]; }
@@ -161,6 +163,7 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig): RuleSet
   function parseExpression(): RuleSet { return parseOr(); }
 
   const result = parseExpression();
+  if (info) { info.index = pos; info.length = tokens.length; }
   return result;
 }
 
@@ -301,7 +304,11 @@ function validateRuleset(rs: RuleSet, config: QueryBuilderConfig, parent?: RuleS
 
 export function validateBql(bql: string, config: QueryBuilderConfig): boolean {
   try {
-    const rs = bqlToRuleset(bql, config);
+    const info: ParseInfo = { index: 0, length: 0 };
+    const rs = bqlToRuleset(bql, config, info);
+    if (info.index !== info.length) {
+      return false;
+    }
     return validateRuleset(rs, config);
   } catch {
     return false;
