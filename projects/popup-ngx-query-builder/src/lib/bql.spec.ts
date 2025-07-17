@@ -84,4 +84,8 @@ describe('validateBql', () => {
   it('should reject queries with trailing text', () => {
     expect(validateBql('sign=aries trailing', cfg)).toBeFalse();
   });
+
+  it('should reject queries with dangling operator', () => {
+    expect(validateBql('sign=aries &', cfg)).toBeFalse();
+  });
 });
