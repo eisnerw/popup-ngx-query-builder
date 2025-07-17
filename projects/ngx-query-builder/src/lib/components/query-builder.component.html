@@ -114,7 +114,7 @@
   <ng-template #defaultSwitchGroup>
     <div [ngClass]="getClassNames('switchGroup', 'transition')" *ngIf="data"
          (mouseenter)="hoveringSwitchGroup = true" (mouseleave)="hoveringSwitchGroup = false">
-      <div [ngClass]="getClassNames('switchControl')" *ngIf="allowNot && (data.not || (hoveringSwitchGroup && data.rules.length !== 1))">
+      <div [ngClass]="getClassNames('switchControl')" *ngIf="allowNot && (data.not || hoveringSwitchGroup)">
         <input type="checkbox" [ngClass]="getClassNames('switchRadio')" [(ngModel)]="data.not"
                (ngModelChange)="changeNot($event)" [disabled]="disabled" />
         <label (click)="changeNot(!data.not)" [ngClass]="getClassNames('switchLabel')">
