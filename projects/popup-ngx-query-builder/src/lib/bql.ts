@@ -82,7 +82,10 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
     if (tok.value === '(') {
       consume();
       const expr = parseExpression();
-      if (peek() && peek().value === ')') consume();
+      if (!peek() || peek().value !== ')') {
+        throw new Error('Missing closing parenthesis');
+      }
+      consume();
       expr.isChild = true;
       return expr;
     }
@@ -291,6 +294,20 @@ function validateRule(rule: Rule, parent: RuleSet, config: QueryBuilderConfig): 
 }
 
 function validateRuleset(rs: RuleSet, config: QueryBuilderConfig, parent?: RuleSet): boolean {
+  if (rs.name) {
+    if (!config.getNamedRuleset) {
+      return false;
+    }
+    let stored: RuleSet | undefined;
+    try {
+      stored = config.getNamedRuleset(rs.name);
+    } catch {
+      stored = undefined;
+    }
+    if (!stored) {
+      return false;
+    }
+  }
   for (const child of rs.rules) {
     const asRule = child as Rule;
     if (asRule.field !== undefined) {
