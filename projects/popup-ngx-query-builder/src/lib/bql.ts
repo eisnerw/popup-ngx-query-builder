@@ -78,7 +78,7 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
 
   function parsePrimary(): RuleSet {
     const tok = peek();
-    if (!tok) return { condition: 'and', rules: [] };
+    if (!tok) throw new Error('Unexpected end of input');
     if (tok.value === '(') {
       consume();
       const expr = parseExpression();
@@ -104,13 +104,17 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
       return { condition: 'and', rules: [], name };
     }
     // value or field rule
+    if (tok.type !== 'word' && tok.type !== 'string') {
+      throw new Error('Unexpected token');
+    }
+
     const first = consume();
     const next = peek();
-    if (next && next.type === 'operator' || (next && next.type === 'word' && isAlphaOperator(next.value))) {
+    if (next && (next.type === 'operator' || (next.type === 'word' && isAlphaOperator(next.value)))) {
       const opTok = consume();
       const valTok = consume();
       if (!valTok) {
-        return { condition: 'and', rules: [] };
+        throw new Error('Unexpected end of input');
       }
       const field = first.value;
       const operator = opTok.type === 'word' ? opTok.value.toLowerCase() : opTok.value;
