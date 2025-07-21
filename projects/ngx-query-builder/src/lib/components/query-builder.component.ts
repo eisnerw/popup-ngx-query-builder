@@ -120,7 +120,7 @@ export class QueryBuilderComponent implements OnChanges, ControlValueAccessor, V
     saveIcon: 'q-icon q-save-icon'
   };
   public defaultOperatorMap: Record<string, string[]> = {
-    string: ['=', '!=', 'contains', 'like'],
+    string: ['=', '!=', 'contains', '!contains', 'like', '!like'],
     number: ['=', '!=', '>', '>=', '<', '<='],
     time: ['=', '!=', '>', '>=', '<', '<='],
     date: ['=', '!=', '>', '>=', '<', '<='],
