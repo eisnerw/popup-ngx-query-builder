@@ -63,15 +63,15 @@ export class QueryInputComponent implements OnInit {
   // Default configuration for the query builder
   defaultConfig: QueryBuilderConfig = {
     fields: {
-      document: { name: 'Document', type: 'string', operators: ["contains"]},
+      document: { name: 'Document', type: 'string', operators: ["contains", "!contains"]},
       // lname: { name: 'Last Name', type: 'string', operators: ['=', '!=', 'contains', 'like', 'exists'] },
       lname: {
         name: 'Last Name',
         type: 'category'
       },
-      fname: { name: 'First Name', type: 'string', operators: ['=', '!=', 'contains', 'like', 'exists'] },
+      fname: { name: 'First Name', type: 'string', operators: ['=', '!=', 'contains', '!contains', 'like', '!like', 'exists'] },
       isAlive: { name: 'Alive?', type: 'boolean' },
-      categories: { name: 'Category', type: 'string', operators: ["contains", "exists"]},
+      categories: { name: 'Category', type: 'string', operators: ["contains", "!contains", "exists"]},
       dob: {
         name: 'Birthday', type: 'date', operators: ['=', '<=', '>', '<', '>='],
         defaultValue: (() => new Date())

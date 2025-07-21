@@ -134,4 +134,13 @@ describe('validateBql', () => {
   it('should reject unknown named rulesets', () => {
     expect(validateBql('ABC', cfg)).toBeFalse();
   });
+
+  it('should accept != operator for string fields', () => {
+    const cfg2: QueryBuilderConfig = {
+      fields: {
+        fname: { name: 'First Name', type: 'string', operators: ['=', '!='] }
+      }
+    } as any;
+    expect(validateBql('fname!=john', cfg2)).toBeTrue();
+  });
 });

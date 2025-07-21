@@ -43,6 +43,12 @@ function tokenize(input: string): Token[] {
   while (i < input.length) {
     const ch = input[i];
     if (/\s/.test(ch)) { i++; continue; }
+    if ((ch === '!' && i + 1 < input.length && input[i + 1] === '=') || /=|<|>/.test(ch)) {
+      let op = ch; i++;
+      if (i < input.length && input[i] === '=') { op += '='; i++; }
+      tokens.push({ type: 'operator', value: op });
+      continue;
+    }
     if (ch === '(' || ch === ')' || ch === '!' || ch === '&' || ch === '|') {
       tokens.push({ type: 'symbol', value: ch });
       i++; continue;
@@ -57,12 +63,6 @@ function tokenize(input: string): Token[] {
       }
       tokens.push({ type: 'string', value: JSON.parse(input.slice(i, j+1)) });
       i = j + 1; continue;
-    }
-    if (/=|!|<|>/.test(ch)) {
-      let op = ch; i++;
-      if (i < input.length && input[i] === '=') { op += '='; i++; }
-      tokens.push({ type: 'operator', value: op });
-      continue;
     }
     let j = i;
     while (j < input.length && !/\s|\(|\)|!|&|\||=|<|>/.test(input[j])) j++;
