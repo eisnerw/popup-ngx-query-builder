@@ -164,6 +164,22 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
       left.rules.push(...right.rules);
       return left;
     }
+    // flatten single-rule AND children when merging OR conditions
+    if (
+      cond === 'or' &&
+      left.condition === 'and' &&
+      right.condition === 'and' &&
+      left.rules.length === 1 &&
+      right.rules.length === 1 &&
+      !left.not &&
+      !right.not &&
+      !left.name &&
+      !right.name &&
+      !left.isChild &&
+      !right.isChild
+    ) {
+      return { condition: 'or', rules: [left.rules[0], right.rules[0]] };
+    }
     return { condition: cond, rules: [left, right] };
   }
 
