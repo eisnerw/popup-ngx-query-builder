@@ -93,6 +93,29 @@ describe('BQL named ruleset support', () => {
     const rs = bqlToRuleset('(a=1)', cfg);
     expect(rulesetToBql(rs, cfg)).toBe('a=1');
   });
+
+  it('should parse and stringify !CONTAINS operator', () => {
+    const cfg: QueryBuilderConfig = {
+      fields: { fname: { type: 'string', operators: ['contains', '!contains'] } }
+    } as any;
+    const rs = bqlToRuleset('fname !CONTAINS bob', cfg);
+    const r = rs.rules[0] as Rule;
+    expect(r.field).toBe('fname');
+    expect(r.operator).toBe('!contains');
+    expect(r.value).toBe('bob');
+    expect(rulesetToBql(rs, cfg)).toBe('fname !CONTAINS bob');
+  });
+
+  it('should parse and stringify !LIKE operator', () => {
+    const cfg: QueryBuilderConfig = {
+      fields: { fname: { type: 'string', operators: ['like', '!like'] } }
+    } as any;
+    const rs = bqlToRuleset('fname !LIKE bob', cfg);
+    const r = rs.rules[0] as Rule;
+    expect(r.field).toBe('fname');
+    expect(r.operator).toBe('!like');
+    expect(rulesetToBql(rs, cfg)).toBe('fname !LIKE bob');
+  });
 });
 
 describe('validateBql', () => {
@@ -142,5 +165,19 @@ describe('validateBql', () => {
       }
     } as any;
     expect(validateBql('fname!=john', cfg2)).toBeTrue();
+  });
+
+  it('should accept !CONTAINS operator', () => {
+    const cfg3: QueryBuilderConfig = {
+      fields: { fname: { name: 'First', type: 'string', operators: ['!contains'] } }
+    } as any;
+    expect(validateBql('fname !CONTAINS bob', cfg3)).toBeTrue();
+  });
+
+  it('should accept !LIKE operator', () => {
+    const cfg4: QueryBuilderConfig = {
+      fields: { fname: { name: 'First', type: 'string', operators: ['!like'] } }
+    } as any;
+    expect(validateBql('fname !LIKE bob', cfg4)).toBeTrue();
   });
 });

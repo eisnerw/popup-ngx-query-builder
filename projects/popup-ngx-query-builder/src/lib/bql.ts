@@ -49,6 +49,17 @@ function tokenize(input: string): Token[] {
       tokens.push({ type: 'operator', value: op });
       continue;
     }
+    if (ch === '!' && i + 1 < input.length && /[A-Za-z]/.test(input[i + 1])) {
+      let j = i + 1;
+      while (j < input.length && /[A-Za-z]/.test(input[j])) j++;
+      const word = input.slice(i, j);
+      const up = word.toUpperCase();
+      if ((up === '!CONTAINS' || up === '!LIKE') && (j === input.length || /\s|\(|\)|!|&|\||=|<|>|"/.test(input[j]))) {
+        tokens.push({ type: 'operator', value: up });
+        i = j;
+        continue;
+      }
+    }
     if (ch === '(' || ch === ')' || ch === '!' || ch === '&' || ch === '|') {
       tokens.push({ type: 'symbol', value: ch });
       i++; continue;
@@ -74,11 +85,15 @@ function tokenize(input: string): Token[] {
 }
 
 function isAlphaOperator(op: string): boolean {
-  return /^[A-Z][A-Z_]*$/.test(op);
+  return /^[A-Z][A-Z_]*$/.test(op) || /^![A-Z][A-Z_]*$/.test(op);
 }
 
 function toOperatorToken(op: string): string {
-  return /^[A-Za-z]+$/.test(op) ? op.toUpperCase() : op;
+  if (/^[A-Za-z]+$/.test(op)) return op.toUpperCase();
+  if (op.startsWith('!') && /^[A-Za-z]+$/.test(op.slice(1))) {
+    return '!' + op.slice(1).toUpperCase();
+  }
+  return op;
 }
 
 function parseValue(token: Token, field: string, config: QueryBuilderConfig): any {
@@ -144,7 +159,10 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
         throw new Error('Unexpected end of input');
       }
       const field = first.value;
-      const operator = opTok.type === 'word' ? opTok.value.toLowerCase() : opTok.value;
+      let operator = opTok.value;
+      if (opTok.type === 'word' || /^!?[A-Za-z]+$/.test(opTok.value)) {
+        operator = opTok.value.toLowerCase();
+      }
       const value = valTok.type === 'string' ? valTok.value : parseValue(valTok, field, config);
       return { condition: 'and', rules: [{ field, operator, value }] };
     } else {
