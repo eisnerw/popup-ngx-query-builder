@@ -10,7 +10,7 @@
     "watch": "npm run build:lib && concurrently \"npm run watch:lib\" \"npm run watch:demo\"",
     "watch:lib": "ng build ngx-query-builder --configuration development && ng build popup-ngx-query-builder --watch --configuration development",
     "watch:demo": "ng build popup-demo --watch --configuration development",
-    "test": "ng test"
+    "test": "CHROME_BIN=$(which chromium-browser || which chromium) ng test --karma-config=karma.conf.js --browsers=ChromeHeadlessCustom --watch=false"
   },
   "private": true,
   "dependencies": {
