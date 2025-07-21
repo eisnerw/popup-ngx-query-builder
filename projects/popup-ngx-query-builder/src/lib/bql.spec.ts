@@ -116,6 +116,17 @@ describe('BQL named ruleset support', () => {
     expect(r.operator).toBe('!like');
     expect(rulesetToBql(rs, cfg)).toBe('fname !LIKE bob');
   });
+
+  it('should parse and stringify IN operator', () => {
+    const cfg: QueryBuilderConfig = {
+      fields: { sign: { type: 'string', operators: ['in'] } }
+    } as any;
+    const rs = bqlToRuleset('sign IN (aries,taurus)', cfg);
+    const r = rs.rules[0] as Rule;
+    expect(Array.isArray(r.value)).toBeTrue();
+    expect(r.value.length).toBe(2);
+    expect(rulesetToBql(rs, cfg)).toBe('sign IN (aries,taurus)');
+  });
 });
 
 describe('validateBql', () => {
@@ -179,5 +190,19 @@ describe('validateBql', () => {
       fields: { fname: { name: 'First', type: 'string', operators: ['!like'] } }
     } as any;
     expect(validateBql('fname !LIKE bob', cfg4)).toBeTrue();
+  });
+
+  it('should accept IN operator', () => {
+    const cfg5: QueryBuilderConfig = {
+      fields: { sign: { name: 'Sign', type: 'category', options: [{ name: 'Aries', value: 'aries' }, { name: 'Taurus', value: 'taurus' }], operators: ['in'] } }
+    } as any;
+    expect(validateBql('sign IN (aries,taurus)', cfg5)).toBeTrue();
+  });
+
+  it('should reject invalid value in IN operator', () => {
+    const cfg5: QueryBuilderConfig = {
+      fields: { sign: { name: 'Sign', type: 'category', options: [{ name: 'Aries', value: 'aries' }], operators: ['in'] } }
+    } as any;
+    expect(validateBql('sign IN (aries,taurus)', cfg5)).toBeFalse();
   });
 });

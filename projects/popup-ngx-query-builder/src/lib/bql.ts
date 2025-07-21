@@ -60,7 +60,7 @@ function tokenize(input: string): Token[] {
         continue;
       }
     }
-    if (ch === '(' || ch === ')' || ch === '!' || ch === '&' || ch === '|') {
+    if (ch === '(' || ch === ')' || ch === '!' || ch === '&' || ch === '|' || ch === ',') {
       tokens.push({ type: 'symbol', value: ch });
       i++; continue;
     }
@@ -85,12 +85,13 @@ function tokenize(input: string): Token[] {
 }
 
 function isAlphaOperator(op: string): boolean {
-  return /^[A-Z][A-Z_]*$/.test(op) || /^![A-Z][A-Z_]*$/.test(op);
+  const plain = op.replace(/\s+/g, '');
+  return /^[A-Z][A-Z_]*$/.test(plain) || /^![A-Z][A-Z_]*$/.test(plain);
 }
 
 function toOperatorToken(op: string): string {
-  if (/^[A-Za-z]+$/.test(op)) return op.toUpperCase();
-  if (op.startsWith('!') && /^[A-Za-z]+$/.test(op.slice(1))) {
+  if (/^[A-Za-z\s]+$/.test(op)) return op.toUpperCase();
+  if (op.startsWith('!') && /^[A-Za-z\s]+$/.test(op.slice(1))) {
     return '!' + op.slice(1).toUpperCase();
   }
   return op;
@@ -154,14 +155,37 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
     const next = peek();
     if (next && (next.type === 'operator' || (next.type === 'word' && isAlphaOperator(next.value)))) {
       const opTok = consume();
-      const valTok = consume();
-      if (!valTok) {
-        throw new Error('Unexpected end of input');
-      }
       const field = first.value;
       let operator = opTok.value;
       if (opTok.type === 'word' || /^!?[A-Za-z]+$/.test(opTok.value)) {
         operator = opTok.value.toLowerCase();
+      }
+
+      if (operator === 'not' && peek() && peek().type === 'word' && peek().value.toLowerCase() === 'in') {
+        consume();
+        operator = 'not in';
+      }
+
+      if ((operator === 'in' || operator === 'not in') && peek() && peek().value === '(') {
+        consume(); // (
+        const values: any[] = [];
+        while (peek() && peek().value !== ')') {
+          const tok = consume();
+          if (tok.type !== 'word' && tok.type !== 'string') {
+            throw new Error('Unexpected token');
+          }
+          const v = tok.type === 'string' ? tok.value : parseValue(tok, field, config);
+          values.push(v);
+          if (peek() && peek().value === ',') { consume(); }
+        }
+        if (!peek() || peek().value !== ')') { throw new Error('Missing closing parenthesis'); }
+        consume();
+        return { condition: 'and', rules: [{ field, operator, value: values }] };
+      }
+
+      const valTok = consume();
+      if (!valTok) {
+        throw new Error('Unexpected end of input');
       }
       const value = valTok.type === 'string' ? valTok.value : parseValue(valTok, field, config);
       return { condition: 'and', rules: [{ field, operator, value }] };
@@ -247,7 +271,10 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
 }
 
 function valueToString(value: any): string {
-  if (typeof value === 'string' && /^[A-Za-z0-9]+$/.test(value)) {
+  if (Array.isArray(value)) {
+    return '(' + value.map(v => valueToString(v)).join(',') + ')';
+  }
+  if (typeof value === 'string' && /^[A-Za-z0-9._-]+$/.test(value)) {
     return value;
   }
   return JSON.stringify(value);
@@ -336,6 +363,10 @@ function validateRule(rule: Rule, parent: RuleSet, config: QueryBuilderConfig): 
     return false;
   }
 
+  if ((rule.operator === 'in' || rule.operator === 'not in') && !Array.isArray(rule.value)) {
+    return false;
+  }
+
   let allowedValues: any[] | undefined;
   if (fieldConf.options) {
     allowedValues = fieldConf.options.map(o => o.value);
@@ -352,7 +383,11 @@ function validateRule(rule: Rule, parent: RuleSet, config: QueryBuilderConfig): 
   }
 
   if ((fieldConf.type === 'category' || allowedValues) && allowedValues && allowedValues.length) {
-    if (!allowedValues.includes(rule.value)) {
+    if (rule.operator === 'in' || rule.operator === 'not in') {
+      if (!Array.isArray(rule.value) || !rule.value.every((v: any) => allowedValues!.includes(v))) {
+        return false;
+      }
+    } else if (!allowedValues.includes(rule.value)) {
       return false;
     }
   }
