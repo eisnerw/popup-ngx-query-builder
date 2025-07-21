@@ -24,6 +24,6 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, popup-demo');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Popup NGX Query Builder Demo');
   });
 });
