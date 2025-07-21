@@ -65,6 +65,19 @@ describe('BQL named ruleset support', () => {
     expect((rs.rules[1] as RuleSet).name).toBe('TWO');
   });
 
+  it('should flatten simple OR queries into a single ruleset', () => {
+    const cfg: QueryBuilderConfig = { fields: { fname: { type: 'string' } } } as any;
+    const rs = bqlToRuleset('fname=bill | fname=john', cfg);
+    expect(rs.condition).toBe('or');
+    expect(rs.rules.length).toBe(2);
+    const r1 = rs.rules[0] as Rule;
+    const r2 = rs.rules[1] as Rule;
+    expect(r1.field).toBe('fname');
+    expect(r1.value).toBe('bill');
+    expect(r2.field).toBe('fname');
+    expect(r2.value).toBe('john');
+  });
+
   it('should omit redundant parentheses when stringifying', () => {
     const cfg: QueryBuilderConfig = { fields: { a: { type: 'string' } } } as any;
     const rs = bqlToRuleset('(a=1)', cfg);
