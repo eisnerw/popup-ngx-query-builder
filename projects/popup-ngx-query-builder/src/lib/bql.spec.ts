@@ -116,6 +116,43 @@ describe('BQL named ruleset support', () => {
     expect(r.operator).toBe('!like');
     expect(rulesetToBql(rs, cfg)).toBe('fname !LIKE bob');
   });
+
+  it('should parse and stringify IN operator', () => {
+    const cfg: QueryBuilderConfig = {
+      fields: { sign: { type: 'string', operators: ['in'] } }
+    } as any;
+    const rs = bqlToRuleset('sign IN (aries,taurus)', cfg);
+    const r = rs.rules[0] as Rule;
+    expect(Array.isArray(r.value)).toBeTrue();
+    expect(r.value.length).toBe(2);
+    expect(rulesetToBql(rs, cfg)).toBe('sign IN (aries,taurus)');
+  });
+
+  it('should parse IN operator with quoted value', () => {
+    const cfg: QueryBuilderConfig = {
+      fields: { sign: { type: 'string', operators: ['in'] } }
+    } as any;
+    const rs = bqlToRuleset('sign IN ("abc")', cfg);
+    const r = rs.rules[0] as Rule;
+    expect(Array.isArray(r.value)).toBeTrue();
+    expect(r.value).toEqual(['abc']);
+  });
+
+  it('should parse IN operator with whitespace', () => {
+    const cfg: QueryBuilderConfig = {
+      fields: { sign: { type: 'string', operators: ['in'] } }
+    } as any;
+    const rs = bqlToRuleset('sign IN (aries,   taurus, gemini)', cfg);
+    const r = rs.rules[0] as Rule;
+    expect(r.value).toEqual(['aries', 'taurus', 'gemini']);
+  });
+
+  it('should throw on IN operator with no values', () => {
+    const cfg: QueryBuilderConfig = {
+      fields: { sign: { type: 'string', operators: ['in'] } }
+    } as any;
+    expect(() => bqlToRuleset('sign IN ()', cfg)).toThrow();
+  });
 });
 
 describe('validateBql', () => {
@@ -179,5 +216,40 @@ describe('validateBql', () => {
       fields: { fname: { name: 'First', type: 'string', operators: ['!like'] } }
     } as any;
     expect(validateBql('fname !LIKE bob', cfg4)).toBeTrue();
+  });
+
+  it('should accept IN operator', () => {
+    const cfg5: QueryBuilderConfig = {
+      fields: { sign: { name: 'Sign', type: 'category', options: [{ name: 'Aries', value: 'aries' }, { name: 'Taurus', value: 'taurus' }], operators: ['in'] } }
+    } as any;
+    expect(validateBql('sign IN (aries,taurus)', cfg5)).toBeTrue();
+  });
+
+  it('should accept IN operator with whitespace', () => {
+    const cfg5: QueryBuilderConfig = {
+      fields: { sign: { name: 'Sign', type: 'category', options: [{ name: 'Aries', value: 'aries' }, { name: 'Taurus', value: 'taurus' }, { name: 'Gemini', value: 'gemini' }], operators: ['in'] } }
+    } as any;
+    expect(validateBql('sign IN (aries,   taurus, gemini)', cfg5)).toBeTrue();
+  });
+
+  it('should accept IN operator with quoted value', () => {
+    const cfg5: QueryBuilderConfig = {
+      fields: { sign: { name: 'Sign', type: 'category', options: [{ name: 'Abc', value: 'abc' }], operators: ['in'] } }
+    } as any;
+    expect(validateBql('sign IN ("abc")', cfg5)).toBeTrue();
+  });
+
+  it('should reject IN operator with no values', () => {
+    const cfg5: QueryBuilderConfig = {
+      fields: { sign: { name: 'Sign', type: 'category', options: [], operators: ['in'] } }
+    } as any;
+    expect(validateBql('sign IN ()', cfg5)).toBeFalse();
+  });
+
+  it('should reject invalid value in IN operator', () => {
+    const cfg5: QueryBuilderConfig = {
+      fields: { sign: { name: 'Sign', type: 'category', options: [{ name: 'Aries', value: 'aries' }], operators: ['in'] } }
+    } as any;
+    expect(validateBql('sign IN (aries,taurus)', cfg5)).toBeFalse();
   });
 });
