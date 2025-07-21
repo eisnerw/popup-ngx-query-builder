@@ -4,6 +4,30 @@ export interface BqlParseOptions {
 
 import { RuleSet, Rule, QueryBuilderConfig } from 'ngx-query-builder';
 
+function isRule(obj: Rule | RuleSet): obj is Rule {
+  return (obj as Rule).field !== undefined;
+}
+
+function simplify(rs: RuleSet, isRoot = false): RuleSet {
+  rs.rules = rs.rules.map((child) => {
+    if (!isRule(child)) {
+      const inner = simplify(child as RuleSet);
+      if (
+        inner.condition === 'and' &&
+        inner.rules.length === 1 &&
+        !inner.not &&
+        !inner.name &&
+        !inner.isChild
+      ) {
+        return inner.rules[0];
+      }
+      return inner;
+    }
+    return child;
+  });
+  return rs;
+}
+
 interface Token {
   type: 'symbol' | 'word' | 'string' | 'operator';
   value: string;
@@ -197,7 +221,7 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
 
   function parseExpression(): RuleSet { return parseOr(); }
 
-  const result = parseExpression();
+  const result = simplify(parseExpression(), true);
   if (info) { info.index = pos; info.length = tokens.length; }
   return result;
 }
