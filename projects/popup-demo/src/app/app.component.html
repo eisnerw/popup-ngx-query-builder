@@ -3,20 +3,20 @@
   <p>This is a demo of the popup query builder component. Click the search button to open the query builder.</p>
   
   <div class="query-section">
-    <h3>Query Input Component</h3>
-    <lib-query-input 
+    <h3>BQL</h3>
+    <lib-query-input
       [(query)]="currentQuery"
       (queryChange)="onQueryChange($event)"
-      placeholder="Click search to build a query...">
+      placeholder="BQL">
     </lib-query-input>
   </div>
-  
-  <div class="result-section" *ngIf="currentQuery">
-    <h3>Current Query</h3>
-    <textarea 
+
+  <div class="result-section">
+    <h3>Ruleset</h3>
+    <textarea
       class="query-output"
-      [value]="getFormattedQuery()"
-      readonly>
+      [(ngModel)]="rulesetJson"
+      (ngModelChange)="onRulesetChange($event)">
     </textarea>
   </div>
 </div>
