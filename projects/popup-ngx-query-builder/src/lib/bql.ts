@@ -76,7 +76,7 @@ function tokenize(input: string): Token[] {
       i = j + 1; continue;
     }
     let j = i;
-    while (j < input.length && !/\s|\(|\)|!|&|\||=|<|>/.test(input[j])) j++;
+    while (j < input.length && !/\s|\(|\)|!|&|\||=|<|>|,/.test(input[j])) j++;
     const word = input.slice(i, j);
     tokens.push({ type: 'word', value: word });
     i = j;
