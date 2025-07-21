@@ -180,6 +180,9 @@ export function bqlToRuleset(input: string, config: QueryBuilderConfig, info?: P
         }
         if (!peek() || peek().value !== ')') { throw new Error('Missing closing parenthesis'); }
         consume();
+        if (values.length === 0) {
+          throw new Error('IN requires at least one value');
+        }
         return { condition: 'and', rules: [{ field, operator, value: values }] };
       }
 
@@ -363,8 +366,10 @@ function validateRule(rule: Rule, parent: RuleSet, config: QueryBuilderConfig): 
     return false;
   }
 
-  if ((rule.operator === 'in' || rule.operator === 'not in') && !Array.isArray(rule.value)) {
-    return false;
+  if (rule.operator === 'in' || rule.operator === 'not in') {
+    if (!Array.isArray(rule.value) || rule.value.length === 0) {
+      return false;
+    }
   }
 
   let allowedValues: any[] | undefined;
