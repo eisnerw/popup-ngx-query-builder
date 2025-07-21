@@ -78,6 +78,16 @@ describe('BQL named ruleset support', () => {
     expect(r2.value).toBe('john');
   });
 
+  it('should not wrap single rules when combining with groups', () => {
+    const cfg: QueryBuilderConfig = { fields: { fname: { type: 'string' }, document: { type: 'string' } } } as any;
+    const rs = bqlToRuleset('(fname=bill | fname=john) & foo', cfg);
+    expect(rs.condition).toBe('and');
+    expect(rs.rules.length).toBe(2);
+    expect((rs.rules[0] as RuleSet).condition).toBe('or');
+    expect((rs.rules[1] as Rule).field).toBe('document');
+    expect((rs.rules[1] as Rule).value).toBe('foo');
+  });
+
   it('should omit redundant parentheses when stringifying', () => {
     const cfg: QueryBuilderConfig = { fields: { a: { type: 'string' } } } as any;
     const rs = bqlToRuleset('(a=1)', cfg);
